@@ -3,6 +3,8 @@ import Moment from 'react-moment';
 import { Modal,TouchableHighlight,Picker,Text, View ,Button,StyleSheet,Image,TouchableOpacity,AsyncStorage,ScrollView,FlatList,ActivityIndicator, } from 'react-native';
 import { createBottomTabNavigator, createAppContainer,createDrawerNavigator,createStackNavigator,StackNavigator, } from 'react-navigation';
 import Icon from 'react-native-vector-icons/FontAwesome'; 
+import RNFetchBlob from 'rn-fetch-blob';
+import ImagePicker from "react-native-image-picker";
 export const ROOT_URL = 'http://mailin.co.in';
 class StudentProfile extends React.Component { 
   static navigationOptions = {
@@ -861,44 +863,25 @@ class UploadScreen extends React.Component {
     this.state = {
       loading: true,
       userId:'',
-      dataSource:[],      
+      dataSource:[],   
+      pickedImage: null,   
      };     
    }
-    componentDidMount(){
-    AsyncStorage.getItem('userId').then((value) => 
-      this.setState({ 'userId': value })       
-      )
-      AsyncStorage.getItem('userId', (err, result) => {
-      fetch(ROOT_URL+'/api/student/remarks/'+this.state.userId)
-      .then(response => response.json())
-      .then((responseJson)=> {
+   pickImageHandler = () => {
+    ImagePicker.showImagePicker({title: "Pick an Image", maxWidth: 800, maxHeight: 600}, res => {
+      if (res.didCancel) {
+        console.log("User cancelled!");
+      } else if (res.error) {
+        console.log("Error", res.error);
+      } else {
         this.setState({
-          loading: false,
-          dataSource: responseJson
-        })
-      })
-      .catch(error=>console.log(error)) //to catch the errors if any
-      });
-    } 
-    FlatListItemSeparator = () => {
-      return (
-        <View style={{
-           height: .5,
-           width:"100%",
-          
-      }}
-      />
-      );
-    }
-   renderItem=(data)=>
-<Text style={styles.list}>
-<Text style={styles.name}>
-Teacher: {data.item.admin.first_name} {"\n"}
-   Date : <Moment element={Text} format="DD/MM/YYYY">{data.item.created_at}</Moment>  {"\n"}
- 
-  Remarks: {data.item.remark}
-   
-</Text></Text>  
+          pickedImage: { uri: res.uri }
+        });
+
+      }
+    });
+  }
+     
 
   static navigationOptions = {
     drawerLabel: 'Upload',
@@ -906,29 +889,33 @@ Teacher: {data.item.admin.first_name} {"\n"}
       <Icon name="upload" size={20} color="#000" />
     ),
   };
+  resetHandler = () =>{
+    this.reset();
+  }
+  reset = () => {
+    this.setState({
+      pickedImage: null
+    });
+  }
   render() {
-    if(this.state.loading){
-      return( 
-        <View style={styles.loader}> 
-          <ActivityIndicator size="large" color="#0c9"/>
+    return (
+      <View style={styles.container}>
+      <Text style={styles.textStyle}>Pick Image From Camera and Gallery </Text>
+        <View style={styles.placeholder}>
+          <Image source={this.state.pickedImage} style={styles.previewImage} />
         </View>
-    )}
-    return(
-    <View style={styles.list}>
-      <Text style={styles.name}>
-         Document Type 
-        </Text> 
-       <Picker  itemStyle={{ backgroundColor: "white", color: "white", fontFamily:"Ebrima", fontSize:17 }}
-          onValueChange={(itemValue, itemIndex) =>
-            this.setState({language: itemValue})
-          }>
-          <Picker.Item color="black"  label="Java" value="java" />
-          <Picker.Item color="black" label="JavaScript" value="js" />
-        </Picker>
-    </View>
-      
-    )}
+        <View style={styles.button}>
+
+          <Button title="Pick Image" onPress={this.pickImageHandler} />
+
+          <Button title="Reset" onPress={this.resetHandler} />
+
+        </View>
+      </View>
+    );
+  }
 }
+
  
 class TimeTableScreen extends React.Component {
   constructor(props) {    
@@ -1369,6 +1356,34 @@ export default class App extends React.Component {
 const styles = StyleSheet.create({
   header:{
     backgroundColor: "#00BFFF",
+  },
+  container: {
+    alignItems:"center"
+  },
+  textStyle: {
+    fontWeight:"bold",
+    fontSize:30,
+    textAlign:"center",
+    color:"red",
+    marginTop:10
+  },
+  placeholder: {
+    borderWidth: 1,
+    borderColor: "black",
+    backgroundColor: "#eee",
+    width: "70%",
+    height: 280,
+    marginTop:50,
+  },
+  button: {
+    width: "80%",
+    marginTop:20,
+    flexDirection:"row",
+    justifyContent: "space-around"
+  },
+  previewImage: {
+      width: "100%",
+      height: "100%"
   },
   headerContent:{
     padding:30,
