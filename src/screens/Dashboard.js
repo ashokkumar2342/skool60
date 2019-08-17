@@ -1,11 +1,12 @@
 import React from 'react';
 import Moment from 'react-moment';
-import { Modal,TouchableHighlight,Picker,Text, View ,Button,StyleSheet,Image,TouchableOpacity,AsyncStorage,ScrollView,FlatList,ActivityIndicator, } from 'react-native';
+import { Modal,TouchableHighlight,Picker,Alert,PixelRatio,TextInput,Text, View ,Button,StyleSheet,Image,TouchableOpacity,AsyncStorage,ScrollView,FlatList,ActivityIndicator, } from 'react-native';
 import { createBottomTabNavigator, createAppContainer,createDrawerNavigator,createStackNavigator,StackNavigator, } from 'react-navigation';
 import Icon from 'react-native-vector-icons/FontAwesome'; 
 import RNFetchBlob from 'rn-fetch-blob';
 import ImagePicker from "react-native-image-picker";
 export const ROOT_URL = 'http://mailin.co.in';
+
 class StudentProfile extends React.Component { 
   static navigationOptions = {
 
@@ -20,12 +21,13 @@ class StudentProfile extends React.Component {
     return userId;
   }
   constructor(props) {
-    
+   
     super(props);
     
     this.state = {
       loading: true,
       userId:'',
+      url:'',
       dataSource:[],
       classes:[],
       sectionTypes:[],
@@ -34,11 +36,16 @@ class StudentProfile extends React.Component {
      
    }
      componentDidMount(){
+       
       AsyncStorage.getItem('userId').then((value) => 
        this.setState({ 'userId': value })       
+       ) 
+       AsyncStorage.getItem('url').then((value) => 
+       this.setState({ 'url': value })      
+        
        )
        AsyncStorage.getItem('userId', (err, result) => {
-        fetch(ROOT_URL+'/api/student/details/'+this.state.userId)
+        fetch(this.state.url+'/api/student/details/'+this.state.userId)
         .then(response => response.json())
         .then((responseJson)=> {
           this.setState({
@@ -69,7 +76,7 @@ class StudentProfile extends React.Component {
              <View style={styles.header}>
             <View style={styles.headerContent}>
                 <Image style={styles.avatar}
-                  source={{uri: ROOT_URL+'/api/student/image/'+this.state.userId}}/>
+                  source={{uri: this.state.url+'/api/student/image/'+this.state.userId}}/>
 
                 <Text style={styles.name}>
                 {this.state.dataSource.name} 
@@ -261,7 +268,7 @@ class DashboardScreen extends React.Component {
 
   render() {
     return (
-      
+      <ScrollView>
       <View style={styles.container}> 
           <View style={styles.body}>
             <View style={styles.bodyContent}>
@@ -366,6 +373,7 @@ class DashboardScreen extends React.Component {
             </View>
         </View> 
       </View>
+      </ScrollView>
       
     );
   }
@@ -857,60 +865,111 @@ Teacher: {data.item.admin.first_name} {"\n"}
      </View>
      )}
 }
-class UploadScreen extends React.Component {
-  constructor(props) {    
-    super(props);    
-    this.state = {
-      loading: true,
-      userId:'',
-      dataSource:[],   
-      pickedImage: null,   
-     };     
-   }
-   pickImageHandler = () => {
-    ImagePicker.showImagePicker({title: "Pick an Image", maxWidth: 800, maxHeight: 600}, res => {
-      if (res.didCancel) {
-        console.log("User cancelled!");
-      } else if (res.error) {
-        console.log("Error", res.error);
-      } else {
-        this.setState({
-          pickedImage: { uri: res.uri }
-        });
-
-      }
-    });
-  }
-     
-
+class UploadScreen extends React.Component { 
   static navigationOptions = {
     drawerLabel: 'Upload',
     drawerIcon: ({ tintColor }) => ( 
       <Icon name="upload" size={20} color="#000" />
     ),
-  };
-  resetHandler = () =>{
-    this.reset();
+  }; 
+  constructor() {
+ 
+    super();
+ 
+    this.state = {
+      loading: true,
+      userId:'',
+      ImageSource: null, 
+      data: null,  
+    }
   }
-  reset = () => {
-    this.setState({
-      pickedImage: null
+  componentDidMount(){
+    AsyncStorage.getItem('userId').then((value) => 
+      this.setState({ 'userId': value })       
+      ) 
+     
+    } 
+ 
+  selectPhotoTapped() {
+    const options = {
+      quality: 1.0,
+      maxWidth: 500,
+      maxHeight: 500,
+      storageOptions: {
+        skipBackup: true
+      }
+    };
+ 
+    ImagePicker.showImagePicker(options, (response) => {
+      console.log('Response = ', response);
+ 
+      if (response.didCancel) {
+        console.log('User cancelled photo picker');
+      }
+      else if (response.error) {
+        console.log('ImagePicker Error: ', response.error);
+      }
+      else if (response.customButton) {
+        console.log('User tapped custom button: ', response.customButton);
+      }
+      else {
+        let source = { uri: response.uri };
+ 
+        this.setState({
+ 
+          ImageSource: source,
+          data: response.data
+ 
+        });
+        
+      }
     });
   }
+ 
+  uploadImageToServer = () => { 
+    RNFetchBlob.fetch('POST', ROOT_URL+'/api/student/image-upload/'+this.state.userId, {
+      Authorization: "Bearer access-token",
+      otherHeader: "foo",
+      'Content-Type': 'multipart/form-data',
+    }, [
+        { name: 'image', filename: 'image.png', type: 'image/png', data: this.state.data },
+     
+      ]).then((resp) => {
+ 
+        var tempMSG = resp.data;
+ 
+        tempMSG = tempMSG.replace(/^"|"$/g, '');
+ 
+        Alert.alert('Upload successfully');
+ 
+      }).catch((err) => {
+        Alert.alert('Image Not Upload')
+      })
+ 
+  }
+ 
   render() {
     return (
-      <View style={styles.container}>
-      <Text style={styles.textStyle}>Pick Image From Camera and Gallery </Text>
-        <View style={styles.placeholder}>
-          <Image source={this.state.pickedImage} style={styles.previewImage} />
-        </View>
-        <View style={styles.button}>
-
-          <Button title="Pick Image" onPress={this.pickImageHandler} />
-
-          <Button title="Reset" onPress={this.resetHandler} />
-
-        </View>
+      <View style={stylesImagePiker.container}>
+ 
+        <TouchableOpacity onPress={this.selectPhotoTapped.bind(this)}>
+ 
+          <View style={stylesImagePiker.ImageContainer}>
+ 
+            {this.state.ImageSource === null ? <Text>Select a Photo</Text> :
+              <Image style={stylesImagePiker.ImageContainer} source={this.state.ImageSource} />
+            }
+ 
+          </View>
+ 
+        </TouchableOpacity> 
+ 
+        <TouchableOpacity onPress={this.uploadImageToServer} activeOpacity={0.6} style={stylesImagePiker.button} >
+ 
+          <Text style={stylesImagePiker.TextStyle}> UPLOAD IMAGE TO SERVER </Text>
+ 
+        </TouchableOpacity>
+ 
       </View>
     );
   }
@@ -1352,12 +1411,58 @@ export default class App extends React.Component {
     return <AppContainer />;
   }
 }
+const stylesImagePiker = StyleSheet.create({
 
+  container: {
+    flex: 1,
+    alignItems: 'center',
+    backgroundColor: '#FFF8E1',
+    paddingTop: 20
+  },
+
+  ImageContainer: {
+    borderRadius: 10,
+    width: 250,
+    height: 250,
+    borderColor: '#9B9B9B',
+    borderWidth: 1 / PixelRatio.get(),
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#CDDC39',
+
+  },
+
+  TextInputStyle: {
+
+    textAlign: 'center',
+    height: 40,
+    width: '80%',
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: '#028b53',
+    marginTop: 20
+  },
+
+  button: {
+
+    width: '80%',
+    backgroundColor: '#00BCD4',
+    borderRadius: 7,
+    marginTop: 20
+  },
+
+  TextStyle: {
+    color: '#fff',
+    textAlign: 'center',
+    padding: 10
+  }
+
+});
 const styles = StyleSheet.create({
   header:{
     backgroundColor: "#00BFFF",
   },
-  container: {
+  ImageContainer: {
     alignItems:"center"
   },
   textStyle: {
@@ -1415,7 +1520,7 @@ const styles = StyleSheet.create({
   bodyContent: {
     flex: 1,
     alignItems: 'center',
-    padding:30,
+    padding:20,
   },
   textInfo:{
     fontSize:14,
@@ -1429,8 +1534,8 @@ const styles = StyleSheet.create({
   },
   menuBox:{
     backgroundColor: "#eaeaea",
-    width:120,
-    height:110,
+    width:115,
+    height:105,
     alignItems: 'center',
     justifyContent: 'center',
     margin:7,
