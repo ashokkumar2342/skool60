@@ -1,6 +1,6 @@
 import React from 'react';
 import Moment from 'react-moment';
-import { Modal,TouchableHighlight,Picker,Alert,PixelRatio,TextInput,Text, View ,Button,StyleSheet,Image,TouchableOpacity,AsyncStorage,ScrollView,FlatList,ActivityIndicator, } from 'react-native';
+import { Modal,TouchableHighlight,Picker,ProgressBarAndroid,ToastAndroid,PermissionsAndroid,Alert,PixelRatio,TextInput,Text, View ,Button,StyleSheet,Image,TouchableOpacity,AsyncStorage,ScrollView,FlatList,ActivityIndicator, } from 'react-native';
 import { createBottomTabNavigator, createAppContainer,createDrawerNavigator,createStackNavigator,StackNavigator, } from 'react-navigation';
 import Icon from 'react-native-vector-icons/FontAwesome'; 
 import RNFetchBlob from 'rn-fetch-blob';
@@ -238,6 +238,10 @@ class DashboardScreen extends React.Component {
     {
       this.props.navigation.navigate('Upload');
     }
+    goToDownload = () =>
+    {
+      this.props.navigation.navigate('Download');
+    }
     goToTimeTable = () =>
     {
       this.props.navigation.navigate('TimeTable');
@@ -338,6 +342,12 @@ class DashboardScreen extends React.Component {
                 <View style={styles.menuBox}>
                 <Image style={styles.icon} source={{uri: 'https://png.icons8.com/upload/color/50/ffffff'}}/>
                   <Text style={styles.info} onPress={() => this.goToUpload}>Upload</Text>
+                </View>
+              </TouchableOpacity>
+              <TouchableOpacity activeOpacity = { .5 } onPress={ this.goToDownload }> 
+                <View style={styles.menuBox}>
+                <Image style={styles.icon} source={{uri: 'https://png.icons8.com/download/color/50/ffffff'}}/>
+                  <Text style={styles.info} onPress={() => this.goToDownload}>Download</Text>
                 </View>
               </TouchableOpacity>
               <TouchableOpacity activeOpacity = { .5 } onPress={ this.goToTimeTable }> 
@@ -950,6 +960,7 @@ class UploadScreen extends React.Component {
  
   render() {
     return (
+      <ScrollView> 
       <View style={stylesImagePiker.container}>
  
         <TouchableOpacity onPress={this.selectPhotoTapped.bind(this)}>
@@ -969,10 +980,232 @@ class UploadScreen extends React.Component {
           <Text style={stylesImagePiker.TextStyle}> UPLOAD IMAGE TO SERVER </Text>
  
         </TouchableOpacity>
- 
-      </View>
+         
+        
+        <View style={{flex: 1, flexDirection: 'row'}}>
+          <View style={{flex: 1}}>
+            <Text style={stylesImagePiker.TextLebelStyle}>First Name </Text> 
+            <TextInput style={stylesImagePiker.inputBox} 
+              underlineColorAndroid='rgba(0,0,0,0)' 
+              placeholderTextColor = "#ffffff"
+              selectionColor="#fff"
+              keyboardType="text"
+              onChangeText={text=> this.setState({username:text})}
+              />
+            <Text style={stylesImagePiker.TextLebelStyle}>Last Name </Text> 
+            <TextInput style={stylesImagePiker.inputBox} 
+              underlineColorAndroid='rgba(0,0,0,0)'  
+              placeholderTextColor = "#ffffff"
+              selectionColor="#fff"
+              keyboardType="text" 
+              onChangeText={text=> this.setState({username:text})}
+              />
+            <Text style={stylesImagePiker.TextLebelStyle}> Name </Text> 
+            <TextInput style={stylesImagePiker.inputBox} 
+              underlineColorAndroid='rgba(0,0,0,0)' 
+              selectionColor="#fff"
+              keyboardType="text"
+              onChangeText={text=> this.setState({username:text})}
+              />
+              <Text style={stylesImagePiker.TextLebelStyle}> Name </Text> 
+            <TextInput style={stylesImagePiker.inputBox} 
+              underlineColorAndroid='rgba(0,0,0,0)' 
+              selectionColor="#fff"
+              keyboardType="text"
+              onChangeText={text=> this.setState({username:text})}
+              />
+              <Text style={stylesImagePiker.TextLebelStyle}> Name </Text> 
+            <TextInput style={stylesImagePiker.inputBox} 
+              underlineColorAndroid='rgba(0,0,0,0)' 
+              selectionColor="#fff"
+              keyboardType="text"
+              onChangeText={text=> this.setState({username:text})}
+              />
+              <Text style={stylesImagePiker.TextLebelStyle}> Name </Text> 
+            <TextInput style={stylesImagePiker.inputBox} 
+              underlineColorAndroid='rgba(0,0,0,0)' 
+              selectionColor="#fff"
+              keyboardType="text"
+              onChangeText={text=> this.setState({username:text})}
+              />
+              <Text style={stylesImagePiker.TextLebelStyle}> Name </Text> 
+            <TextInput style={stylesImagePiker.inputBox} 
+              underlineColorAndroid='rgba(0,0,0,0)' 
+              selectionColor="#fff"
+              keyboardType="text"
+              onChangeText={text=> this.setState({username:text})}
+              />
+              <Text style={stylesImagePiker.TextLebelStyle}> Name </Text> 
+            <TextInput style={stylesImagePiker.inputBox} 
+              underlineColorAndroid='rgba(0,0,0,0)' 
+              selectionColor="#fff"
+              keyboardType="text"
+              onChangeText={text=> this.setState({username:text})}
+              />
+              <Text style={stylesImagePiker.TextLebelStyle}> Name </Text> 
+            <TextInput style={stylesImagePiker.inputBox} 
+              underlineColorAndroid='rgba(0,0,0,0)' 
+              selectionColor="#fff"
+              keyboardType="text"
+              onChangeText={text=> this.setState({username:text})}
+              />
+              <Text style={stylesImagePiker.TextLebelStyle}> Name </Text> 
+            <TextInput style={stylesImagePiker.inputBox} 
+              underlineColorAndroid='rgba(0,0,0,0)' 
+              selectionColor="#fff"
+              keyboardType="text"
+              onChangeText={text=> this.setState({username:text})}
+              />
+              <Text style={stylesImagePiker.TextLebelStyle}> Name </Text> 
+            <TextInput style={stylesImagePiker.inputBox} 
+              underlineColorAndroid='rgba(0,0,0,0)' 
+              selectionColor="#fff"
+              keyboardType="text"
+              onChangeText={text=> this.setState({username:text})}
+              />
+              <Text style={stylesImagePiker.TextLebelStyle}> Name </Text> 
+            <TextInput style={stylesImagePiker.inputBox} 
+              underlineColorAndroid='rgba(0,0,0,0)' 
+              selectionColor="#fff"
+              keyboardType="text"
+              onChangeText={text=> this.setState({username:text})}
+              />
+
+          </View> 
+       </View> 
+       
+      </View> 
+      </ScrollView> 
     );
   }
+}
+class DownloadScreen extends React.Component { 
+  static navigationOptions = {
+    drawerLabel: 'Download',
+    drawerIcon: ({ tintColor }) => ( 
+      <Icon name="download" size={20} color="#000" />
+    ),
+  }; 
+  constructor(props) {
+    super(props);
+    this.state = {
+      progress: 0,
+      loading: false,
+    };
+  }
+
+  actualDownload = (fileUrl) => { 
+    this.setState({
+      progress: 0,
+      loading: true,
+      userId:'',
+      dataSource:[], 
+    });
+    let dirs = RNFetchBlob.fs.dirs;
+    RNFetchBlob.config({
+      // add this option that makes response data to be stored as a file,
+      // this is much more performant.
+      path: dirs.DownloadDir + "/path-to-file.png",
+      fileCache: true
+       })
+      .fetch("GET",fileUrl,{
+          //some headers ..
+        }
+      )
+      .progress((received, total) => {
+        console.log("progress", received / total);
+        this.setState({ progress: received / total });
+      })
+      .then(res => {
+        this.setState({
+          progress: 100,
+          loading: false
+        });
+        ToastAndroid.showWithGravity(
+          "Your file has been downloaded to downloads folder!",
+          ToastAndroid.SHORT,
+          ToastAndroid.BOTTOM
+        );
+      });
+  };
+
+  componentDidMount(){
+    AsyncStorage.getItem('userId').then((value) => 
+      this.setState({ 'userId': value })       
+      )
+      AsyncStorage.getItem('userId', (err, result) => {
+      fetch(ROOT_URL+'/api/student/remarks/'+this.state.userId)
+      .then(response => response.json())
+      .then((responseJson)=> {
+        this.setState({
+          loading: false,
+          dataSource: responseJson
+        })
+      })
+      .catch(error=>console.log(error)) //to catch the errors if any
+      });
+    } 
+    FlatListItemSeparator = () => {
+      return (
+        <View style={{
+           height: .5,
+           width:"100%",
+          
+      }}
+      />
+      );
+    }
+    FlatListItemSeparator = () => {
+      return (
+        <View style={{
+           height: .5,
+           width:"100%",
+          
+      }}
+      />
+      );
+    }
+   renderItem=(data)=>
+  <Text style={styles.list}>
+    <Text style={styles.name}>
+    Download 
+    </Text>
+    
+  </Text>  
+
+  static navigationOptions = {
+    drawerLabel: 'Time Table',
+    drawerIcon: ({ tintColor }) => ( 
+      <Icon name="calendar" size={20} color="#000" />
+    ),
+  };
+  render() {
+    if(this.state.loading){
+      return( 
+        <View style={styles.loader}> 
+          <ActivityIndicator size="large" color="#0c9"/>
+        </View>
+    )}
+    return(
+      <View style={styles.container}>
+      <FlatList
+         data= {this.state.dataSource}
+         ItemSeparatorComponent = {this.FlatListItemSeparator}
+         renderItem= {item=> this.renderItem(item)}
+         keyExtractor= {item=>item.id.toString()}
+      />
+      <Button onPress={() => this.actualDownload("http://www.africau.edu/images/default/sample.pdf")} title="Download" />
+        {this.state.loading ? (
+          <ProgressBarAndroid
+            styleAttr="Large"
+            indeterminate={false}
+            progress={this.state.progress}
+          />
+        ) : null}
+     </View>
+     
+     )}
+   
 }
 
  
@@ -1358,6 +1591,9 @@ Remarks: {
 Upload: {
   screen: UploadScreen,
 },
+Download: {
+  screen: DownloadScreen,
+},
 TimeTable: {
   screen: TimeTableScreen,
 },
@@ -1412,13 +1648,51 @@ export default class App extends React.Component {
   }
 }
 const stylesImagePiker = StyleSheet.create({
-
-  container: {
-    flex: 1,
+  container : {
+  	backgroundColor:'#455a64',
+    flexGrow: 1,
+    justifyContent:'center',
     alignItems: 'center',
-    backgroundColor: '#FFF8E1',
-    paddingTop: 20
+    paddingLeft: 10,
+    paddingRight: 10,
+
   },
+
+
+  inputBox: {
+     
+    backgroundColor:'rgba(255, 255,255,0.2)',
+    
+    paddingHorizontal:16,
+    fontSize:16,
+    color:'#ffffff',
+    marginVertical: 10, 
+  },
+  button: {
+    width:300,
+    backgroundColor:'#1c313a',
+     borderRadius: 25,
+      marginVertical: 10,
+      paddingVertical: 13
+  }, 
+  buttonText: {
+    fontSize:16,
+    fontWeight:'500',
+    color:'#ffffff',
+    textAlign:'center'
+  },
+  buttonTextRight: {
+    fontSize:16,
+    fontWeight:'500',
+    color:'#ffffff',
+    textAlign:'right'
+  },
+  // container: {
+  //   flex: 1,
+  //   alignItems: 'center',
+  //   backgroundColor: '#FFF8E1',
+  //   paddingTop: 20
+  // },
 
   ImageContainer: {
     borderRadius: 10,
@@ -1440,7 +1714,7 @@ const stylesImagePiker = StyleSheet.create({
     borderRadius: 10,
     borderWidth: 1,
     borderColor: '#028b53',
-    marginTop: 20
+    marginTop: 20,
   },
 
   button: {
@@ -1455,6 +1729,12 @@ const stylesImagePiker = StyleSheet.create({
     color: '#fff',
     textAlign: 'center',
     padding: 10
+  },
+  TextLebelStyle: {
+    color: '#fff',  
+    fontSize:20,
+    textAlign: 'left',
+  
   }
 
 });
