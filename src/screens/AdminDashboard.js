@@ -5,7 +5,7 @@ import { createBottomTabNavigator, createAppContainer,createDrawerNavigator,crea
 import Icon from 'react-native-vector-icons/FontAwesome'; 
 import { Toolbar } from 'react-native-material-ui';
 import { black } from 'ansi-colors';
-export const ROOT_URL = 'http://mailin.co.in';
+export const ROOT_URL = 'http://eageskool.com';
 class StudentProfile extends React.Component { 
   static navigationOptions = {
 
@@ -446,7 +446,7 @@ class AttendanceScreen extends React.Component {
       this.setState({ 'userId': value })       
       )
       AsyncStorage.getItem('userId', (err, result) => {
-      fetch('http:/mailin.co.in/api/student/attendance/'+this.state.userId)
+      fetch('http://eageskool.com/api/student/attendance/'+this.state.userId)
       .then(response => response.json())
       .then((responseJson)=> {
         this.setState({

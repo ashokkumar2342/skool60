@@ -5,7 +5,7 @@ import { createBottomTabNavigator, createAppContainer,createDrawerNavigator,crea
 import Icon from 'react-native-vector-icons/FontAwesome'; 
 import RNFetchBlob from 'rn-fetch-blob';
 import ImagePicker from "react-native-image-picker";
-export const ROOT_URL = 'http://mailin.co.in';
+export const ROOT_URL = 'http://eageskool.com';
 
 class StudentProfile extends React.Component { 
   static navigationOptions = {
@@ -882,10 +882,22 @@ class UploadScreen extends React.Component {
       <Icon name="upload" size={20} color="#000" />
     ),
   }; 
-  constructor() {
- 
-    super();
- 
+  constructor(props) { 
+    super(props);
+    this.state = { text: 'Useless Placeholder' };
+   state = { 
+     name: '',
+     nick_name:'', 
+     father_name:'', 
+     mother_name:'', 
+     father_mobile:'', 
+     mother_mobile:'', 
+     dob:'',
+     p_address:'', 
+    }
+   this.state = { 
+     dataSource:[],      
+      }; 
     this.state = {
       loading: true,
       userId:'',
@@ -957,6 +969,33 @@ class UploadScreen extends React.Component {
       })
  
   }
+
+  bubmitToServer = () => {
+   
+    RNFetchBlob.fetch('POST', 'http://eageskool.com/api/student/request-update/1', {
+      Authorization: "Bearer access-token",
+        'Content-Type': 'multipart/form-data',
+      
+      
+    }, [
+        { name: 'name',data: this.state.name},
+        { name: 'nick_name',data: this.state.nick_name},
+        { name: 'father_name',data: this.state.father_name},
+        { name: 'mother_name',data: this.state.mother_name},
+        { name: 'father_mobile',data: this.state.father_mobile},
+        { name: 'mother_mobile',data: this.state.mother_mobile},
+        { name: 'date_of_birth',data: this.state.dob},
+        { name: 'p_address',data: this.state.p_address},
+     
+      ]).then((resp) => { 
+        Alert.alert('Upload successfully');
+ 
+      }).catch((err) => {
+        Alert.alert('Image Not Upload')
+      })
+    
+    // alert(name)
+  }
  
   render() {
     return (
@@ -990,86 +1029,62 @@ class UploadScreen extends React.Component {
               placeholderTextColor = "#ffffff"
               selectionColor="#fff"
               keyboardType="text"
-              onChangeText={text=> this.setState({username:text})}
+              onChangeText={text=> this.setState({name:text})}
               />
-            <Text style={stylesImagePiker.TextLebelStyle}>Last Name </Text> 
+            <Text style={stylesImagePiker.TextLebelStyle}>Nick Name </Text> 
             <TextInput style={stylesImagePiker.inputBox} 
               underlineColorAndroid='rgba(0,0,0,0)'  
               placeholderTextColor = "#ffffff"
               selectionColor="#fff"
               keyboardType="text" 
-              onChangeText={text=> this.setState({username:text})}
+              onChangeText={text=> this.setState({nick_name:text})}
               />
-            <Text style={stylesImagePiker.TextLebelStyle}> Name </Text> 
+            <Text style={stylesImagePiker.TextLebelStyle}> Father's Name </Text> 
+            <TextInput style={stylesImagePiker.inputBox} 
+              underlineColorAndroid='rgba(0,0,0,0)' 
+              selectionColor="#fff"
+              keyboardType="text"
+              onChangeText={text=> this.setState({father_name:text})}
+              />
+              <Text style={stylesImagePiker.TextLebelStyle}> Mother's Name </Text> 
+            <TextInput style={stylesImagePiker.inputBox} 
+              underlineColorAndroid='rgba(0,0,0,0)' 
+              selectionColor="#fff"
+              keyboardType="text"
+              onChangeText={text=> this.setState({mother_name:text})}
+              />
+              <Text style={stylesImagePiker.TextLebelStyle}> Father's Mobile </Text> 
             <TextInput style={stylesImagePiker.inputBox} 
               underlineColorAndroid='rgba(0,0,0,0)' 
               selectionColor="#fff"
               keyboardType="text"
               onChangeText={text=> this.setState({username:text})}
               />
-              <Text style={stylesImagePiker.TextLebelStyle}> Name </Text> 
+              <Text style={stylesImagePiker.TextLebelStyle}> Mother's Mobile </Text> 
             <TextInput style={stylesImagePiker.inputBox} 
               underlineColorAndroid='rgba(0,0,0,0)' 
               selectionColor="#fff"
               keyboardType="text"
-              onChangeText={text=> this.setState({username:text})}
-              />
-              <Text style={stylesImagePiker.TextLebelStyle}> Name </Text> 
+              onChangeText={text=> this.setState({mother_mobile:text})}
+              /> 
+              <Text style={stylesImagePiker.TextLebelStyle}> Date Of Birth </Text> 
             <TextInput style={stylesImagePiker.inputBox} 
               underlineColorAndroid='rgba(0,0,0,0)' 
               selectionColor="#fff"
               keyboardType="text"
-              onChangeText={text=> this.setState({username:text})}
-              />
-              <Text style={stylesImagePiker.TextLebelStyle}> Name </Text> 
+              onChangeText={text=> this.setState({dob:text})}
+              /> 
+               <Text style={stylesImagePiker.TextLebelStyle}> Address </Text> 
             <TextInput style={stylesImagePiker.inputBox} 
               underlineColorAndroid='rgba(0,0,0,0)' 
               selectionColor="#fff"
               keyboardType="text"
-              onChangeText={text=> this.setState({username:text})}
-              />
-              <Text style={stylesImagePiker.TextLebelStyle}> Name </Text> 
-            <TextInput style={stylesImagePiker.inputBox} 
-              underlineColorAndroid='rgba(0,0,0,0)' 
-              selectionColor="#fff"
-              keyboardType="text"
-              onChangeText={text=> this.setState({username:text})}
-              />
-              <Text style={stylesImagePiker.TextLebelStyle}> Name </Text> 
-            <TextInput style={stylesImagePiker.inputBox} 
-              underlineColorAndroid='rgba(0,0,0,0)' 
-              selectionColor="#fff"
-              keyboardType="text"
-              onChangeText={text=> this.setState({username:text})}
-              />
-              <Text style={stylesImagePiker.TextLebelStyle}> Name </Text> 
-            <TextInput style={stylesImagePiker.inputBox} 
-              underlineColorAndroid='rgba(0,0,0,0)' 
-              selectionColor="#fff"
-              keyboardType="text"
-              onChangeText={text=> this.setState({username:text})}
-              />
-              <Text style={stylesImagePiker.TextLebelStyle}> Name </Text> 
-            <TextInput style={stylesImagePiker.inputBox} 
-              underlineColorAndroid='rgba(0,0,0,0)' 
-              selectionColor="#fff"
-              keyboardType="text"
-              onChangeText={text=> this.setState({username:text})}
-              />
-              <Text style={stylesImagePiker.TextLebelStyle}> Name </Text> 
-            <TextInput style={stylesImagePiker.inputBox} 
-              underlineColorAndroid='rgba(0,0,0,0)' 
-              selectionColor="#fff"
-              keyboardType="text"
-              onChangeText={text=> this.setState({username:text})}
-              />
-              <Text style={stylesImagePiker.TextLebelStyle}> Name </Text> 
-            <TextInput style={stylesImagePiker.inputBox} 
-              underlineColorAndroid='rgba(0,0,0,0)' 
-              selectionColor="#fff"
-              keyboardType="text"
-              onChangeText={text=> this.setState({username:text})}
-              />
+              onChangeText={text=> this.setState({p_address:text})}
+              /> 
+              
+            <TouchableOpacity onPress={this.bubmitToServer} activeOpacity={0.6} style={stylesImagePiker.submitButton} > 
+              <Text style={stylesImagePiker.TextStyle}> Submit </Text> 
+            </TouchableOpacity>
 
           </View> 
        </View> 
@@ -1658,7 +1673,13 @@ const stylesImagePiker = StyleSheet.create({
 
   },
 
-
+submitButton:{
+    width:390,
+    backgroundColor:'#1c313a',
+     borderRadius: 25,
+      marginVertical: 10,
+      paddingVertical: 13
+},
   inputBox: {
      
     backgroundColor:'rgba(255, 255,255,0.2)',
@@ -1720,7 +1741,7 @@ const stylesImagePiker = StyleSheet.create({
   button: {
 
     width: '80%',
-    backgroundColor: '#00BCD4',
+    backgroundColor: '#1c313a',
     borderRadius: 7,
     marginTop: 20
   },

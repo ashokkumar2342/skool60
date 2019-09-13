@@ -8,16 +8,24 @@ export class Login extends Component {
 	   this.state = { text: 'Useless Placeholder' };
 		state = { username: '',password:'' }
 		this.state = { 
+      loading: true,
+      userId:'',
+      rootUrl:'',
 			dataSource:[],      
 		   }; 
-	}
+  }
+  componentDidMount(){       
+    AsyncStorage.getItem('rootUrl').then((value) => 
+     this.setState({ 'rootUrl': value })  
+     ) 
+  }
 	static navigationOptions={
 		header :null
 	}
 	 
 	 checkLogin = async ()=>{
-		 const {username,password}=this.state
-		 fetch('http://mailin.co.in/api/login?email='+username+'&password='+password+'')
+		 const {username,password}=this.state 
+		 fetch(this.state.rootUrl+'/api/login?email='+username+'&password='+password+'')
 			.then(response => response.json())
 			.then((responseJson)=> {
 				this.setState({
