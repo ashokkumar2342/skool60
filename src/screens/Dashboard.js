@@ -31,12 +31,15 @@ class StudentProfile extends React.Component {
       dataSource:[],
       classes:[],
       sectionTypes:[],
-      
+      addressDetails:[],
+      father:[],
+      mother:[],
+      religions:[],
+      categories:[],
      };
      
    }
-     componentDidMount(){
-       
+     componentDidMount(){       
       AsyncStorage.getItem('userId').then((value) => 
        this.setState({ 'userId': value })       
        ) 
@@ -44,7 +47,7 @@ class StudentProfile extends React.Component {
        this.setState({ 'url': value })      
         
        )
-       AsyncStorage.getItem('userId', (err, result) => {
+       AsyncStorage.getItem('userId', (err, result) => { 
         fetch(this.state.url+'/api/student/details/'+this.state.userId)
         .then(response => response.json())
         .then((responseJson)=> {
@@ -53,16 +56,30 @@ class StudentProfile extends React.Component {
            dataSource: responseJson,
            classes: responseJson.classes,
            sectionTypes: responseJson.section_types,
-          
+           addressDetails: responseJson.address_details.address,
+           religions: responseJson.address_details.address.religions,
+           categories: responseJson.address_details.address.categories, 
           })
+          if(responseJson.parents[0]!=null){
+            this.setState({ 
+              father: responseJson.parents[0].parent_info, 
+             })
+          }
+          if(responseJson.parents[1]!=null){
+            this.setState({ 
+              mother: responseJson.parents[1].parent_info, 
+             })
+          }
+          
+           
         })
         .catch(error=>console.log(error)) //to catch the errors if any
        }); 
       }  
    
       _signOutAsync = async () => {
-        await AsyncStorage.clear();
-         
+        
+        await AsyncStorage.removeItem('isLoggedIn');         
         this.props.navigation.navigate('profile');
       }; 
 
@@ -117,17 +134,27 @@ class StudentProfile extends React.Component {
            </View>
            <View style={styles.list}>
             <Text style={styles.name}>
-                  Mobile No : {this.state.dataSource.father_mobile} 
+                  Mobile No : {this.state.addressDetails.primary_mobile} 
               </Text>
            </View>
            <View style={styles.list}>
             <Text style={styles.name}>
-                  Father's Name: {this.state.dataSource.father_name} 
+                  Father's Name: {this.state.father.name} 
               </Text>
            </View>
            <View style={styles.list}>
             <Text style={styles.name}>
-                  Mother's Name: {this.state.dataSource.mother_name} 
+                  Father's Mobile No: {this.state.father.mobile} 
+              </Text>
+           </View>
+           <View style={styles.list}>
+            <Text style={styles.name}>
+                  Mother's Name: {this.state.mother.name} 
+              </Text>
+           </View>
+           <View style={styles.list}>
+            <Text style={styles.name}>
+                  Mother's Mobile No: {this.state.mother.mobile} 
               </Text>
            </View>
            <View style={styles.list}>
@@ -137,27 +164,42 @@ class StudentProfile extends React.Component {
            </View>
            <View style={styles.list}>
             <Text style={styles.name}>
-            Category: {this.state.dataSource.category} 
+            Category: {this.state.categories.name} 
               </Text>
            </View>
            <View style={styles.list}>
             <Text style={styles.name}>
-            Religion : {this.state.dataSource.religion } 
+            Religion : {this.state.religions.name } 
               </Text>
            </View>
            <View style={styles.list}>
             <Text style={styles.name}>
-            City  : {this.state.dataSource.city  } 
+            City  : {this.state.addressDetails.city  } 
               </Text>
            </View>
            <View style={styles.list}>
             <Text style={styles.name}>
-            State   : {this.state.dataSource.state  } 
+            State   : {this.state.addressDetails.state  } 
               </Text>
            </View>
            <View style={styles.list}>
             <Text style={styles.name}>
-            Pincode   : {this.state.dataSource.pincode   } 
+            Permanent Address  : {this.state.addressDetails.p_address   } 
+              </Text>
+           </View>
+           <View style={styles.list}>
+            <Text style={styles.name}>
+            Permanent Pincode   : {this.state.addressDetails.p_pincode   } 
+              </Text>
+           </View>
+           <View style={styles.list}>
+            <Text style={styles.name}>
+            Corespondance  Address : {this.state.addressDetails.c_address   } 
+              </Text>
+           </View>
+           <View style={styles.list}>
+            <Text style={styles.name}>
+            Corespondance Pincode   : {this.state.addressDetails.c_pincode   } 
               </Text>
            </View>
             
@@ -894,6 +936,7 @@ class UploadScreen extends React.Component {
      mother_mobile:'', 
      dob:'',
      p_address:'', 
+     c_address:'', 
     }
    this.state = { 
      dataSource:[],      
@@ -986,6 +1029,7 @@ class UploadScreen extends React.Component {
         { name: 'mother_mobile',data: this.state.mother_mobile},
         { name: 'date_of_birth',data: this.state.dob},
         { name: 'p_address',data: this.state.p_address},
+        { name: 'c_address',data: this.state.c_address},
      
       ]).then((resp) => { 
         Alert.alert('Upload successfully');
@@ -1074,12 +1118,19 @@ class UploadScreen extends React.Component {
               keyboardType="text"
               onChangeText={text=> this.setState({dob:text})}
               /> 
-               <Text style={stylesImagePiker.TextLebelStyle}> Address </Text> 
+            <Text style={stylesImagePiker.TextLebelStyle}>Parmanent Address </Text> 
             <TextInput style={stylesImagePiker.inputBox} 
               underlineColorAndroid='rgba(0,0,0,0)' 
               selectionColor="#fff"
               keyboardType="text"
               onChangeText={text=> this.setState({p_address:text})}
+              /> 
+            <Text style={stylesImagePiker.TextLebelStyle}>Corespondance Address </Text> 
+            <TextInput style={stylesImagePiker.inputBox} 
+              underlineColorAndroid='rgba(0,0,0,0)' 
+              selectionColor="#fff"
+              keyboardType="text"
+              onChangeText={text=> this.setState({c_address:text})}
               /> 
               
             <TouchableOpacity onPress={this.bubmitToServer} activeOpacity={0.6} style={stylesImagePiker.submitButton} > 
@@ -1676,9 +1727,10 @@ const stylesImagePiker = StyleSheet.create({
 submitButton:{
     width:390,
     backgroundColor:'#1c313a',
-     borderRadius: 25,
-      marginVertical: 10,
-      paddingVertical: 13
+    borderRadius: 25,
+    marginVertical: 10,
+    paddingVertical: 2,
+    fontSize:16,
 },
   inputBox: {
      
