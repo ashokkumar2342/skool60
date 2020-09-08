@@ -134,6 +134,11 @@ class StudentProfile extends React.Component {
            </View>
            <View style={styles.list}>
             <Text style={styles.name}>
+                  Aadhaar No : {this.state.dataSource.adhar_no} 
+              </Text>
+           </View>
+           <View style={styles.list}>
+            <Text style={styles.name}>
                   Mobile No : {this.state.addressDetails.primary_mobile} 
               </Text>
            </View>

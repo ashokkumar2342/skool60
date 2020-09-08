@@ -58,8 +58,8 @@ export class Login extends Component {
 		await	 AsyncStorage.setItem('isLoggedIn', String(1))
 		await	 AsyncStorage.setItem('isRoleId', String(role_id))
     await	AsyncStorage.setItem('userId', String(data))
-    await	AsyncStorage.setItem('url', 'http://eageskool.com')
-    if (role_id==6) {
+    // await	AsyncStorage.setItem('url', 'http://eageskool.com')
+    if (role_id==12) {
       this.props.navigation.navigate('DashboardScreen');
     } else {
       this.props.navigation.navigate('AdminDashboardScreen');

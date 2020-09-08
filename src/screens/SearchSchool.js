@@ -6,7 +6,7 @@ export class SearchSchool extends Component {
 	constructor(props) {
 	   super(props);
 	   this.state = { text: 'Useless Placeholder' };
-		state = { school_code: '' }
+		state = { school_code: null }
 		this.state = { 
 			dataSource:[],      
 		   }; 
@@ -16,7 +16,7 @@ export class SearchSchool extends Component {
 	}
 	 
     checkSchoolCode = async ()=>{       
-         const {school_code}=this.state  
+         const {school_code}=this.state   
          //this.props.navigation.navigate('Login');       
 		 fetch('http://eageskool.com/api/search-school?school_code='+school_code+'')
 			.then(response => response.json())
@@ -26,7 +26,7 @@ export class SearchSchool extends Component {
 				dataSource: responseJson
                 })    
 				if(responseJson.status==1){ 
-					LoginData(responseJson.id,responseJson.school_url)
+          LoginData(responseJson.id,responseJson.school_url); 
 				}else{ 
 					Alert.alert('Error','School Code Not Match',[{
 					text:'Okey'
@@ -34,7 +34,7 @@ export class SearchSchool extends Component {
 				}
 				
 			})  
-		LoginData = async (data,root_url)=>{ 
+		LoginData = async (data,root_url)=>{ console.log(root_url)
 		await	 AsyncStorage.setItem('rootUrl', String(root_url))	 
         this.props.navigation.navigate('Login'); 
 		 }

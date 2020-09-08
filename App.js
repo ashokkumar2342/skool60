@@ -55,10 +55,10 @@ class AuthLoadingScreen extends React.Component {
     const isLoggedIn =await AsyncStorage.getItem('isLoggedIn');
     const isRoleId =await AsyncStorage.getItem('isRoleId');
     const rootUrlIn =await AsyncStorage.getItem('rootUrl');
-    if (isLoggedIn=='1' && isRoleId == '6') {
+    if (isLoggedIn=='1' && isRoleId == '12') {
       this.props.navigation.navigate('App');
     }
-    else if (isLoggedIn=='1') { 
+    else if (isLoggedIn=='1') {
       this.props.navigation.navigate('AppAdmin');
     } else {
       if(rootUrlIn==null){

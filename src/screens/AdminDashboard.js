@@ -52,7 +52,13 @@ class StudentProfile extends React.Component {
       }  
    
       _signOutAsync = async () => {
-        await AsyncStorage.clear();
+        const actionToDispatch = NavigationActions.reset({
+          index: 0,
+          key: null,  
+          actions: [this.props.navigation.navigate('profile')]
+        })
+        // this.props.navigation.dispatch(actionToDispatch)
+        await AsyncStorage.removeItem('isLoggedIn');    
          
         this.props.navigation.navigate('profile');
       }; 
@@ -228,110 +234,135 @@ class AdminDashboardScreen extends React.Component {
     onRightElementPress={ (label) => { console.log(label) }}
   />
     return (
+      <ScrollView>
       <View style={styles.container}> 
           <View style={styles.body}>
             <View style={styles.bodyContent}>
             <TouchableOpacity activeOpacity = { .5 } onPress={ this.goToProfile }>
             
              <View style={styles.menuBox}>
-                <Image style={styles.icon} source={{uri: 'https://png.icons8.com/profile/color/50/ffffff'}} />
+             <Icon name="user" size={40} color="#000" /> 
                 <Text style={styles.info} onPress={() => this.goToProfile}>Profile</Text>
               </View>
            </TouchableOpacity>
 
             <TouchableOpacity activeOpacity = { .5 } onPress={ this.goToFee }> 
                 <View style={styles.menuBox}>
-                <Image style={styles.icon} source={{uri: 'https://png.icons8.com/rupee/color/50/ffffff'}}/>
+                <Icon name="rupee" size={40} color="#000" /> 
                   <Text style={styles.info} onPress={() => this.goToAttendance}>Fee</Text>
                 </View>
             </TouchableOpacity>
 
             <TouchableOpacity activeOpacity = { .5 } onPress={ this.goToAttendance }> 
               <View style={styles.menuBox}>
-              <Image style={styles.icon} source={{uri: 'https://png.icons8.com/bar-chart/dusk/50/ffffff'}}/>
+              <Icon name="bar-chart" size={40} color="#000" />
                 <Text style={styles.info} onPress={() => this.goToAttendance}>Attendance</Text>
               </View>
             </TouchableOpacity>
 
               <TouchableOpacity activeOpacity = { .5 } onPress={ this.goToClassTest }> 
                 <View style={styles.menuBox}>
-                <Image style={styles.icon} source={{uri: 'https://png.icons8.com/rupee/exam/50/28a745'}}/>
+                <Icon name="bar-chart" size={40} color="#000" />
                   <Text style={styles.info} onPress={() => this.goToClassTest}>Class Test</Text>
                 </View>
               </TouchableOpacity>
               
               <TouchableOpacity activeOpacity = { .5 } onPress={ this.goToHomework }> 
                 <View style={styles.menuBox}>
-                <Image style={styles.icon} source={{uri: 'https://png.icons8.com/product/nolan/50/ffffff'}}/>
+                <Icon name="address-book" size={40} color="#000" />
                   <Text style={styles.info} onPress={() => this.goToHomework}>Homework</Text>
                 </View>
               </TouchableOpacity>
 
               <TouchableOpacity activeOpacity = { .5 } onPress={ this.goToEvent }> 
                 <View style={styles.menuBox}>
-                <Image style={styles.icon} source={{uri: 'https://png.icons8.com/event/dusk/50/ffffff'}}/>
+                <Icon name="calendar" size={40} color="#000" />
                   <Text style={styles.info} onPress={() => this.goToEvent}>Event</Text>
                 </View>
               </TouchableOpacity> 
 
               <TouchableOpacity activeOpacity = { .5 } onPress={ this.goToLibrary }> 
                 <View style={styles.menuBox}>
-                <Image style={styles.icon} source={{uri: 'https://png.icons8.com/book/color/50/ffffff'}}/>
+                <Icon name="address-book" size={40} color="#000" />
                   <Text style={styles.info} onPress={() => this.goToLibrary}>Library</Text>
                 </View>
               </TouchableOpacity>
 
               <TouchableOpacity activeOpacity = { .5 } onPress={ this.goToMessages }> 
                 <View style={styles.menuBox}>
-                <Image style={styles.icon} source={{uri: 'https://png.icons8.com/chat/color/50/28a745'}}/>
+                <Icon name="envelope" size={40} color="#000" />
                   <Text style={styles.info} onPress={() => this.goToMessages}>Messages</Text>
                 </View>
               </TouchableOpacity>  
               <TouchableOpacity activeOpacity = { .5 } onPress={ this.goToRemarks }> 
                 <View style={styles.menuBox}>
-                <Image style={styles.icon} source={{uri: 'https://png.icons8.com/talk-male/color/50/ffffff'}}/>
+                <Icon name="comment" size={40} color="#000" />
                   <Text style={styles.info} onPress={() => this.goToRemarks}>Remarks</Text>
                 </View>
               </TouchableOpacity> 
               <TouchableOpacity activeOpacity = { .5 } onPress={ this.goToUpload }> 
                 <View style={styles.menuBox}>
-                <Image style={styles.icon} source={{uri: 'https://png.icons8.com/upload/color/50/ffffff'}}/>
+                <Icon name="upload" size={40} color="#000" />
                   <Text style={styles.info} onPress={() => this.goToUpload}>Upload</Text>
                 </View>
               </TouchableOpacity>
               <TouchableOpacity activeOpacity = { .5 } onPress={ this.goToTimeTable }> 
                 <View style={styles.menuBox}>
-                <Image style={styles.icon} source={{uri: 'https://png.icons8.com/timetable/color/50/ffffff'}}/>
+                <Icon name="calendar" size={40} color="#000" />
                   <Text style={styles.info} onPress={() => this.goToTimeTable}>Time Table</Text>
                 </View>
               </TouchableOpacity>
               <TouchableOpacity activeOpacity = { .5 } onPress={ this.goToCalendar }> 
                 <View style={styles.menuBox}>
-                <Image style={styles.icon} source={{uri: 'https://png.icons8.com/planner/color/50/ffffff'}}/>
+                <Icon name="bar-chart" size={40} color="#000" />
                   <Text style={styles.info} onPress={() => this.goToCalendar}>Calendar</Text>
                 </View>
               </TouchableOpacity>
               <TouchableOpacity activeOpacity = { .5 } onPress={ this.goToLeave }> 
                 <View style={styles.menuBox}>
-                <Image style={styles.icon} source={{uri: 'https://png.icons8.com/leave/color/50/ffffff'}}/>
+                <Icon name="bar-chart" size={40} color="#000" />
                   <Text style={styles.info} onPress={() => this.goToLeave}>Leave</Text>
                 </View>
               </TouchableOpacity>
               <TouchableOpacity activeOpacity = { .5 } onPress={ this.goToExam }> 
                 <View style={styles.menuBox}>
-                <Image style={styles.icon} source={{uri: 'https://png.icons8.com/exam/color/50/ffffff'}}/>
+                <Icon name="bar-chart" size={40} color="#000" />
                   <Text style={styles.info} onPress={() => this.goToExam}>Exam</Text>
                 </View>
               </TouchableOpacity>
               <TouchableOpacity activeOpacity = { .5 } onPress={ this.goToQuotes }> 
                 <View style={styles.menuBox}>
-                <Image style={styles.icon} source={{uri: 'https://png.icons8.com/quote-left/color/50/ffffff'}}/>
+                <Icon name="bar-chart" size={40} color="#000" />
                   <Text style={styles.info} onPress={() => this.goToQuotes}>Quotes</Text>
                 </View>
               </TouchableOpacity>
             </View>
         </View>
       </View>
+        <View
+      style={{
+        flexDirection: "row",
+        height: 150,
+        width:400,
+    
+      }}
+    >
+       <Image source={{uri: 'http://eageskool.com/front_asset/extra-images/banner-03.jpg'}}
+   style={{width: '100%', height: 150}} /> 
+     </View>
+          <View
+        style={{
+          flexDirection: "row",
+          height: 150,
+          width:'100%', 
+          textAlign: 'center', 
+         
+        }}
+      >
+         <Image source={{uri: 'http://eageskool.com/front_asset/images/logo.png'}}
+     style={{width: 400, height: 100}} /> 
+       </View>
+      </ScrollView>
     );
   }
   
@@ -345,6 +376,7 @@ class HomeworkScreen extends React.Component {
       userId:'',
       dataSource:[], 
       homWorks:[],      
+      options:["Home","Savings","Car","GirlFriend"],
      };     
    }
    
@@ -408,8 +440,21 @@ class HomeworkScreen extends React.Component {
         </View>
     )}
     return (
-      
+       
       <View > 
+        <Picker
+     
+        style={{ height: 50, width: 150 }}
+        onValueChange={(itemValue, itemIndex) => setSelectedValue(itemValue)}
+      >
+         { 
+         this.state.options.map((userData) => {
+          return <Picker.Item key={id} value={id} label={userData} />;
+         })
+      }
+        
+         
+      </Picker>
         <TextInput  style=
         {{
          borderColor: 'gray', borderWidth: 1,
@@ -1446,7 +1491,7 @@ const styles = StyleSheet.create({
   },
   menuBox:{
     backgroundColor: "#eaeaea",
-    width:120,
+    width:116,
     height:110,
     alignItems: 'center',
     justifyContent: 'center',
@@ -1464,7 +1509,7 @@ const styles = StyleSheet.create({
     height:60,
   },
   info:{
-    fontSize:22,
+    fontSize:18,
     color: "#696969",
   },
   list:{
