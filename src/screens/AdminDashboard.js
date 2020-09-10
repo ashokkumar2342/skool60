@@ -376,7 +376,8 @@ class HomeworkScreen extends React.Component {
       userId:'',
       dataSource:[], 
       homWorks:[],      
-      options:["Home","Savings","Car","GirlFriend"],
+      options:[],
+      setSelectedValue:'',
      };     
    }
    
@@ -407,7 +408,28 @@ class HomeworkScreen extends React.Component {
         }) 
         .catch(error=>console.log(error)) //to catch the errors if any
         });
+        AsyncStorage.getItem('userId', (err, result) => {
+          fetch(ROOT_URL+'/api/admin/getclass/'+this.state.userId)
+          .then(response => response.json())
+          .then((responseJson)=> { 
+            const x = responseJson;
+            const result = Object.keys(x).map(key => ({[key]: x[key]}));
+            console.log(result);
+          
+            this.setState({
+              loading: false,
+              options: result
+            }) 
+          }) 
+          .catch(error=>console.log(error)) //to catch the errors if any
+          });
     } 
+  setOptionValue = async (data)=>{
+    this.setState({ 
+      setSelectedValue: data
+    })
+  }
+ 
   FlatListItemSeparator = () => {
     return (
       <View style={{
@@ -445,11 +467,15 @@ class HomeworkScreen extends React.Component {
         <Picker
      
         style={{ height: 50, width: 150 }}
-        onValueChange={(itemValue, itemIndex) => setSelectedValue(itemValue)}
+        
+        selectedValue={this.state.setSelectedValue}
+        onValueChange={(itemValue) => this.setOptionValue(itemValue)}
       >
-         { 
-         this.state.options.map((userData) => {
-          return <Picker.Item key={id} value={id} label={userData} />;
+      { 
+       
+         this.state.options.map((itemValue,index) => {
+           console.log(index)
+          // return <Picker.Item key={itemValue.id} value={valitemValueue.id} label={itemValue.name} />;
          })
       }
         
