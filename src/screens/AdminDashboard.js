@@ -1,10 +1,12 @@
 import React, { Component } from 'react';
 import Moment from 'react-moment';
-import {TextInput,Picker,Text, View ,Button,StyleSheet,Image,TouchableOpacity,AsyncStorage,ScrollView,FlatList,ActivityIndicator, } from 'react-native';
+import {TextInput,Picker,Text, View ,Button,StyleSheet,Image,TouchableOpacity,AsyncStorage,ScrollView,FlatList,ActivityIndicator, Alert, } from 'react-native';
 import { createBottomTabNavigator, createAppContainer,createDrawerNavigator,createStackNavigator,StackNavigator, } from 'react-navigation';
 import Icon from 'react-native-vector-icons/FontAwesome'; 
-import { Toolbar } from 'react-native-material-ui';
+import { Toolbar} from 'react-native-material-ui';
+import RadioForm, {RadioButton, RadioButtonInput, RadioButtonLabel} from 'react-native-simple-radio-button';
 import { black } from 'ansi-colors';
+import DatePicker from 'react-native-datepicker';
 export const ROOT_URL = 'http://eageskool.com';
 class StudentProfile extends React.Component { 
   static navigationOptions = {
@@ -374,30 +376,48 @@ class HomeworkScreen extends React.Component {
     this.state = {
       loading: true,
       userId:'',
+      url:'',
       dataSource:[], 
       homWorks:[],      
+      homework:'',
       options:[],
       setSelectedValue:'',
+      sectionOptions:[],
+      setSectionSelectedValue:'',
+      subjectOptions:[],
+      setSubjectSelectedValue:'',
+      date:'',
      };     
    }
    
-    componentDidMount(){
-    AsyncStorage.getItem('userId').then((value) => 
-      this.setState({ 'userId': value })       
-      )
-      AsyncStorage.getItem('userId', (err, result) => {
-      fetch(ROOT_URL+'/api/student/homework-latest/'+this.state.userId)
-      .then(response => response.json())
-      .then((responseJson)=> {
-        this.setState({
-          loading: false,
-          dataSource: responseJson
-        })
-      })
+    componentDidMount(){ 
+      var date = new Date().getDate();
+      var month = new Date().getMonth() + 1;
+      var year = new Date().getFullYear();
+       var date =date + '-' + month + '-' + year; 
+       this.setState({ 'date': date }) 
+
+        AsyncStorage.getItem('userId').then((value) => 
+            this.setState({ 'userId': value })       
+        )
+        AsyncStorage.getItem('rootUrl').then((value) => 
+        this.setState({ 'url': value })       
+        )
       
-      .catch(error=>console.log(error)) //to catch the errors if any
-      });
-      AsyncStorage.getItem('userId', (err, result) => {
+      
+        AsyncStorage.getItem('userId', (err, result) => {
+        fetch(this.state.url+'/api/student/homework-latest/'+this.state.userId)
+        .then(response => response.json())
+        .then((responseJson)=> {
+            this.setState({
+            loading: false,
+            dataSource: responseJson
+            })
+        }) 
+        .catch(error=>console.log(error)) //to catch the errors if any
+        });
+
+        AsyncStorage.getItem('userId', (err, result) => {
         fetch(ROOT_URL+'/api/student/homework/'+this.state.userId)
         .then(response => response.json())
         .then((responseJson)=> {
@@ -409,33 +429,88 @@ class HomeworkScreen extends React.Component {
         .catch(error=>console.log(error)) //to catch the errors if any
         });
         AsyncStorage.getItem('userId', (err, result) => {
-          fetch(ROOT_URL+'/api/admin/getclass/'+this.state.userId)
-          .then(response => response.json())
-          .then((responseJson)=> { 
-            const x = responseJson;
-            const result = Object.keys(x).map(key => ({[key]: x[key]}));
-            console.log(result);
-          
-            this.setState({
-              loading: false,
-              options: result
-            }) 
+        fetch(this.state.url+'/api/admin/getclass/'+this.state.userId)
+        .then(response => response.json())
+        .then((responseJson)=> {  
+          this.setState({
+            loading: false,
+            options: responseJson
           }) 
-          .catch(error=>console.log(error)) //to catch the errors if any
-          });
+        }) 
+        .catch(error=>console.log(error)) //to catch the errors if any
+        });
     } 
-  setOptionValue = async (data)=>{
+    setOptionValue = async (class_id)=>{ 
     this.setState({ 
-      setSelectedValue: data
+      setSelectedValue: class_id
     })
-  }
+    AsyncStorage.getItem('userId', (err, result) => {
+      fetch(this.state.url+'/api/admin/getsection/'+this.state.userId+'/'+class_id)
+      .then(response => response.json())
+      .then((responseJson)=> {  
+        this.setState({
+          loading: false,
+          sectionOptions: responseJson
+      }) 
+    }) 
+    .catch(error=>console.log(error)) //to catch the errors if any
+    });
+    AsyncStorage.getItem('userId', (err, result) => {
+      fetch(this.state.url+'/api/admin/getsubject/'+this.state.userId+'/'+class_id)
+      .then(response => response.json())
+      .then((responseJson)=> {  
+        this.setState({
+          loading: false,
+          subjectOptions: responseJson
+      }) 
+    }) 
+    .catch(error=>console.log(error)) //to catch the errors if any
+    });
+    }
+    setSectionOptionValue = async (data)=>{
+        this.setState({ 
+        setSectionSelectedValue: data
+        })
+    }
+    setSubjectOptionValue = async (data)=>{
+        this.setState({ 
+        setSubjectSelectedValue: data
+        })
+    }
+    submitHomework = async ()=>{
+        const  {userId,homework,setSelectedValue,setSectionSelectedValue,date,setSubjectSelectedValue}=this.state  
+        console.log(setSubjectSelectedValue)
+        fetch(this.state.url+'/api/admin/homework/store', {
+        method: 'POST',
+        headers: {
+            Accept: 'application/json',
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            user_id: userId,
+            homework: homework,
+            class_id: setSelectedValue,
+            section_id: setSectionSelectedValue,
+            subject_id: setSubjectSelectedValue,
+            date: date,
+        })
+       
+        }).then(response => response.json())
+        .then((responseJson)=> {   
+            this.setState({
+            homework: ''
+            });
+            Alert.alert(
+            responseJson.msg 
+            );
+        })  
+    }    
  
   FlatListItemSeparator = () => {
     return (
       <View style={{
           height: .5,
-          width:"100%",
-         
+          width:"100%", 
     }}
     />
     );
@@ -450,58 +525,111 @@ class HomeworkScreen extends React.Component {
     drawerIcon: ({ tintColor }) => ( 
       <Icon name="file-o" size={20} color="#000" />
     ),
-  };
-
-  
-
-  render() {
-    if(this.state.loading){
-      return( 
-        <View style={styles.loader}> 
-          <ActivityIndicator size="large" color="#0c9"/>
+  }; 
+    render() {
+        if(this.state.loading){
+        return( 
+            <View style={styles.loader}> 
+            <ActivityIndicator size="large" color="#0c9"/>
+            </View>
+        )}
+        return (
+        <ScrollView>
+        <View > 
+            <View style={styles.rows}> 
+            <Picker 
+                style={{ height: 50, width: 160,margin:10, borderColor: 'red',
+                backgroundColor: '#f5f2f2',
+                borderWidth: 1,}} 
+                selectedValue={this.state.setSelectedValue}
+                onValueChange={(itemValue) => this.setOptionValue(itemValue)}
+                >
+                { 
+                    this.state.options.map((itemValue,index) => { 
+                    return <Picker.Item key={itemValue.id} value={itemValue.id} label={itemValue.name} />;
+                    })
+                } 
+                </Picker>
+                <Picker 
+                style={{ height: 50, width: 160,margin:10, borderColor: 'red',
+                backgroundColor: '#f5f2f2',
+                borderWidth: 1,}} 
+                selectedValue={this.state.setSectionSelectedValue}
+                onValueChange={(itemValue) => this.setSectionOptionValue(itemValue)}
+                >
+                { 
+                    this.state.sectionOptions.map((itemValue,index) => { 
+                    return <Picker.Item key={itemValue.id} value={itemValue.id} label={itemValue.name} />;
+                    })
+                } 
+                </Picker>
+            
+            </View>
+            <View  style={styles.rows}>
+                <View> 
+                    <Picker 
+                    style={{ height: 50, width: 160,margin:10, borderColor: 'red',
+                    backgroundColor: '#f5f2f2',
+                    borderWidth: 1,}} 
+                    selectedValue={this.state.setSubjectSelectedValue}
+                    onValueChange={(itemValue) => this.setSubjectOptionValue(itemValue)}
+                    >
+                    { 
+                        this.state.subjectOptions.map((itemValue,index) => { 
+                        return <Picker.Item key={itemValue.id} value={itemValue.id} label={itemValue.name} />;
+                        })
+                    } 
+                    </Picker>
+                
+                </View>
+                <View>
+                <DatePicker
+                    style={{width: 160,margin:10}}
+                    date={this.state.date}
+                    mode="date"
+                    placeholder="select date"
+                    format="DD-MM-YYYY" 
+                    confirmBtnText="Confirm"
+                    cancelBtnText="Cancel"
+                    customStyles={{
+                    dateIcon: {
+                        position: 'absolute',
+                        left: 0,
+                        top: 4,
+                        marginLeft: 0
+                    },
+                    dateInput: {
+                        marginLeft: 36
+                    }
+                    // ... You can check the source to find the other keys.
+                    }}
+                    onDateChange={(date) => {this.setState({date: date})}}
+                />
+                </View>
+            </View>
+            <View>
+            <TextInput  style=
+            {{
+            borderColor: 'gray', borderWidth: 1,margin:10,
+            }}       
+            editable = {true}
+            maxLength = {4000}
+            multiline = {true}
+            numberOfLines = {10}
+            placeholder="Enter Homework"
+            onChangeText={text=> this.setState({homework:text})}
+            /> 
+            </View>
+            <View> 
+            <TouchableOpacity style={{margin:10}} > 
+            <Button onPress={() => this.submitHomework()}  
+                title="Save" /> 
+            </TouchableOpacity> 
+            </View>  
         </View>
-    )}
-    return (
-       
-      <View > 
-        <Picker
-     
-        style={{ height: 50, width: 150 }}
-        
-        selectedValue={this.state.setSelectedValue}
-        onValueChange={(itemValue) => this.setOptionValue(itemValue)}
-      >
-      { 
-       
-         this.state.options.map((itemValue,index) => {
-           console.log(index)
-          // return <Picker.Item key={itemValue.id} value={valitemValueue.id} label={itemValue.name} />;
-         })
-      }
-        
-         
-      </Picker>
-        <TextInput  style=
-        {{
-         borderColor: 'gray', borderWidth: 1,
-        }}       
-        editable = {true}
-        maxLength = {40}
-        multiline = {true}
-        numberOfLines = {8}
-        placeholder="Enter Homework"
-        onChangeText={text=> this.setState({username:text})}
-        value={this.state.text}
-      />
-     <TouchableOpacity style={styles.loginButtonSection} > 
-      <Button onPress={() => doLoginStuff()} 
-        style={styles.loginButton}
-        title="Save" /> 
-      </TouchableOpacity> 
-      </View>
-      
-    );
-  }
+        </ScrollView>
+        );
+    }
 }
 class AttendanceScreen extends React.Component {
   constructor(props) {    
@@ -509,44 +637,378 @@ class AttendanceScreen extends React.Component {
     this.state = {
       loading: true,
       userId:'',
-      dataSource:[],      
-     };     
+      url:'',
+      dataSource:[], 
+      homWorks:[],      
+      homework:'',
+      options:[],
+      setSelectedValue:'',
+      sectionOptions:[],
+      setSectionSelectedValue:'',
+      subjectOptions:[],
+      setSubjectSelectedValue:'',
+      date:'',
+      attendanceType:[
+        {label: 'P', value: 1 },
+        {label: 'A', value: 2 },
+        {label: 'L', value: 3 },
+      ],
+      selectedattendance: [],
+      students:[],
+     };    
    }
-    componentDidMount(){
-    AsyncStorage.getItem('userId').then((value) => 
-      this.setState({ 'userId': value })       
+    componentDidMount(){  
+        var date = new Date().getDate();
+        var month = new Date().getMonth() + 1;
+        var year = new Date().getFullYear();
+        var date =date + '-' + month + '-' + year; 
+        this.setState({ 'date': date }) 
+
+      AsyncStorage.getItem('userId').then((value) => 
+          this.setState({ 'userId': value })       
       )
+      AsyncStorage.getItem('rootUrl').then((value) => 
+      this.setState({ 'url': value })       
+      )
+    
+    
       AsyncStorage.getItem('userId', (err, result) => {
-      fetch('http://eageskool.com/api/student/attendance/'+this.state.userId)
+      fetch(this.state.url+'/api/student/homework-latest/'+this.state.userId)
+      .then(response => response.json())
+      .then((responseJson)=> {
+          this.setState({
+          loading: false,
+          dataSource: responseJson
+          })
+      }) 
+      .catch(error=>console.log(error)) //to catch the errors if any
+      });
+
+      AsyncStorage.getItem('userId', (err, result) => {
+      fetch(ROOT_URL+'/api/student/homework/'+this.state.userId)
       .then(response => response.json())
       .then((responseJson)=> {
         this.setState({
           loading: false,
-          dataSource: responseJson
+          homWorks: responseJson
         })
-      })
+      }) 
+      .catch(error=>console.log(error)) //to catch the errors if any
+      });
+      AsyncStorage.getItem('userId', (err, result) => {
+      fetch(this.state.url+'/api/admin/getclass/'+this.state.userId)
+      .then(response => response.json())
+      .then((responseJson)=> {  
+        this.setState({
+          loading: false,
+          options: responseJson
+        }) 
+      }) 
       .catch(error=>console.log(error)) //to catch the errors if any
       });
     }  
+    setOptionValue = async (class_id)=>{ 
+    this.setState({ 
+      setSelectedValue: class_id
+    })
+    AsyncStorage.getItem('userId', (err, result) => {
+      fetch(this.state.url+'/api/admin/getsection/'+this.state.userId+'/'+class_id)
+      .then(response => response.json())
+      .then((responseJson)=> {  
+        this.setState({
+          loading: false,
+          sectionOptions: responseJson
+      }) 
+    }) 
+    .catch(error=>console.log(error)) //to catch the errors if any
+    });
+    AsyncStorage.getItem('userId', (err, result) => {
+      fetch(this.state.url+'/api/admin/getsubject/'+this.state.userId+'/'+class_id)
+      .then(response => response.json())
+      .then((responseJson)=> {  
+        this.setState({
+          loading: false,
+          subjectOptions: responseJson
+      }) 
+    }) 
+    .catch(error=>console.log(error)) //to catch the errors if any
+    });
+    }
+    setSectionOptionValue = async (data)=>{
+        this.setState({ 
+        setSectionSelectedValue: data
+        })
+    }
+    setSubjectOptionValue = async (data)=>{
+        this.setState({ 
+        setSubjectSelectedValue: data
+        })
+    }
+    submitHomework = async ()=>{
+        const  {userId,homework,setSelectedValue,setSectionSelectedValue,date,setSubjectSelectedValue}=this.state  
+        console.log(setSubjectSelectedValue)
+        fetch(this.state.url+'/api/admin/homework/store', {
+        method: 'POST',
+        headers: {
+            Accept: 'application/json',
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            user_id: userId,
+            homework: homework,
+            class_id: setSelectedValue,
+            section_id: setSectionSelectedValue,
+            subject_id: setSubjectSelectedValue,
+            date: date,
+        })
+       
+        }).then(response => response.json())
+        .then((responseJson)=> {   
+            this.setState({
+            homework: ''
+            });
+            Alert.alert(
+            responseJson.msg 
+            );
+        })  
+    }    
   static navigationOptions = {
     drawerLabel: 'Attendance',
     drawerIcon: ({ tintColor }) => ( 
       <Icon name="clock-o" size={20} color="#000" />
     ),
   };
+  setOptionValue = async (class_id)=>{ 
+    this.setState({ 
+      setSelectedValue: class_id
+    })
+    AsyncStorage.getItem('userId', (err, result) => {
+      fetch(this.state.url+'/api/admin/getsection/'+this.state.userId+'/'+class_id)
+      .then(response => response.json())
+      .then((responseJson)=> {  
+        this.setState({
+          loading: false,
+          sectionOptions: responseJson
+      }) 
+    }) 
+    .catch(error=>console.log(error)) //to catch the errors if any
+    });
+   
+    }
+    setSectionOptionValue = async (data)=>{ 
+        this.setState({ 
+        setSectionSelectedValue: data
+        })
+        AsyncStorage.getItem('userId', (err, result) => {  
+            fetch(this.state.url+'/api/admin/getstudent/'+this.state.setSelectedValue+'/'+data)
+            .then(response => response.json())
+            .then((responseJson)=> {   
+                let emptyData=[];
+                this.setState({emptyData});
+                let selectedattendance=this.state.selectedattendance;
+                responseJson.map((itemValue,index) => { 
+                    selectedattendance.push({ id: itemValue.id,type: 1})
+                })
+                this.setState({selectedattendance});
 
-  render() {
-    return (
+                this.setState({
+                loading: false,
+                students: responseJson
+                })  
+          }) 
+          .catch(error=>console.log(error)) //to catch the errors if any
+          }); 
+    }
+    setAttendance = async (value)=>{ 
+        var strArray = value.split("_");
+       var student_id =strArray[0];
+       var attendance =strArray[1];
+       
+        let selectedattendance = this.state.selectedattendance; 
+        if(selectedattendance.length!=0){
+            let updateValue =0;
+            for (let index = 0; index < selectedattendance.length; index++) {
+                const element = selectedattendance[index]; 
+                if(element.id==student_id){ 
+                    updateValue =1; 
+                    selectedattendance[index] = { id: student_id,type: attendance};  
+                }  
+            }
+
+            if(updateValue==0){
+                selectedattendance.push({ id: student_id,type: attendance})
+            } 
+             
+        }else{ 
+            selectedattendance.push({ id: student_id,type: attendance})
+            
+        }
+       
+       
+        this.setState({ selectedattendance });
+        // console.log(this.state.selectedattendance)
+        console.log(selectedattendance)
+       
       
-      <View style={styles.list}>
-        <Text style={styles.name}> Today : {this.state.dataSource.todayAttendance} </Text>
-        <Text style={styles.name}> Total Present : {this.state.dataSource.present}  , Total Absent : {this.state.dataSource.absent} </Text>
+       
+    }
+    
      
-      </View>
-      
-     
-    );
-  }
+    submitHomework = async ()=>{
+        const  {userId,homework,setSelectedValue,setSectionSelectedValue,date,setSubjectSelectedValue}=this.state  
+        console.log(setSubjectSelectedValue)
+        fetch(this.state.url+'/api/admin/homework/store', {
+        method: 'POST',
+        headers: {
+            Accept: 'application/json',
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            user_id: userId,
+            homework: homework,
+            class_id: setSelectedValue,
+            section_id: setSectionSelectedValue,
+            subject_id: setSubjectSelectedValue,
+            date: date,
+        })
+       
+        }).then(response => response.json())
+        .then((responseJson)=> {   
+            this.setState({
+            homework: ''
+            });
+            Alert.alert(
+            responseJson.msg 
+            );
+        })  
+    } 
+
+
+    render() {
+       
+        if(this.state.loading){
+        return( 
+            <View style={styles.loader}> 
+            <ActivityIndicator size="large" color="#0c9"/>
+            </View>
+        )}
+        return (
+        <ScrollView>
+            <View> 
+                <View style={styles.rows}> 
+                <Picker 
+                    style={{ height: 50, width: 160,margin:10, borderColor: 'red',
+                    backgroundColor: '#f5f2f2',
+                    borderWidth: 1,}} 
+                    selectedValue={this.state.setSelectedValue}
+                    onValueChange={(itemValue) => this.setOptionValue(itemValue)}
+                    >
+                    { 
+                        this.state.options.map((itemValue,index) => { 
+                        return <Picker.Item key={itemValue.id} value={itemValue.id} label={itemValue.name} />;
+                        })
+                    } 
+                    </Picker>
+                    <Picker 
+                    style={{ height: 50, width: 160,margin:10, borderColor: 'red',
+                    backgroundColor: '#f5f2f2',
+                    borderWidth: 1,}} 
+                    selectedValue={this.state.setSectionSelectedValue}
+                    onValueChange={(itemValue) => this.setSectionOptionValue(itemValue)}
+                    >
+                    { 
+                        this.state.sectionOptions.map((itemValue,index) => { 
+                        return <Picker.Item key={itemValue.id} value={itemValue.id} label={itemValue.name} />;
+                        })
+                    } 
+                    </Picker>
+                
+                </View>  
+                <View>
+                    <DatePicker
+                        style={{width: 160,margin:10}}
+                        date={this.state.date}
+                        mode="date"
+                        placeholder="select date"
+                        format="DD-MM-YYYY" 
+                        confirmBtnText="Confirm"
+                        cancelBtnText="Cancel"
+                        customStyles={{
+                        dateIcon: {
+                            position: 'absolute',
+                            left: 0,
+                            top: 4,
+                            marginLeft: 0
+                        },
+                        dateInput: {
+                            marginLeft: 36
+                        }
+                        }}
+                        onDateChange={(date) => {this.setState({date: date})}}
+                    />
+                </View> 
+                <View  style={{ margin: 10}}>
+                    
+                    <View style={styles.rows}> 
+                    { 
+                        
+                        this.state.students.map((itemValue,index) => { 
+                            var radio_props = [
+                                {label: 'P', value: itemValue.id+'_'+1 },
+                                {label: 'A', value: itemValue.id+'_'+2 },
+                                {label: 'L', value: itemValue.id+'_'+3 }
+                              ]; 
+                        return <RadioForm
+                            formHorizontal={true}
+                            animation={true}
+                            >
+                             <Text style={{width:100}}>{itemValue.registration_no}</Text>   
+                            { 
+                                radio_props.map((obj, i) => (
+                                     
+                                <RadioButton labelHorizontal={true} key={i+1} >
+                                    <RadioButtonInput
+                                    obj={obj}
+                                    index={i}
+                                    isSelected={this.state.selectedattendance[index].id+'_'+this.state.selectedattendance[index].type === itemValue.id+'_'+(i+1)} 
+                                    onPress={(value) => this.setAttendance(value)}
+                                    borderWidth={1}
+                                    buttonInnerColor={'#e74c3c'}
+                                    buttonOuterColor={this.state.value3Index === i ? '#2196f3' : '#000'}
+                                    buttonSize={20}
+                                    buttonOuterSize={40}
+                                    buttonStyle={{}}
+                                    testID='noteType,1'
+                                    buttonWrapStyle={{marginLeft: 10}}
+                                    />
+                                    <RadioButtonLabel
+                                    obj={obj}
+                                    index={i}
+                                    labelHorizontal={true}
+                                    
+                                    labelStyle={{fontSize: 20, color: '#2ecc71'}}
+                                    labelWrapStyle={{}}
+                                    />
+                                </RadioButton>
+                                ))
+                            }  
+                            </RadioForm>   
+                        })  
+                    }
+                    
+                    
+                    </View> 
+                </View>
+            <View> 
+            <TouchableOpacity style={{margin:10}} > 
+            <Button onPress={() => this.submitHomework()}  
+                title="Save" /> 
+            </TouchableOpacity> 
+            </View>  
+        </View>
+        </ScrollView>
+        );
+    }
 }
 class FeeScreen extends React.Component {
   constructor(props) {    
@@ -1546,7 +2008,17 @@ const styles = StyleSheet.create({
     padding:5,
     fontWeight:'600',
     
-   }
+   },
+   rows: {
+    flex: 1,
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    alignItems: 'center',
+    width:'100%'
+  },
+  col: {
+    width: '50%' // is 50% of container width
+  }
    
 });
 
