@@ -747,7 +747,7 @@ class AttendanceScreen extends React.Component {
     submitHomework = async ()=>{
         const  {userId,homework,setSelectedValue,setSectionSelectedValue,date,setSubjectSelectedValue}=this.state  
         console.log(setSubjectSelectedValue)
-        fetch(this.state.url+'/api/admin/homework/store', {
+        fetch(this.state.url+'/api/admin/attendance/store', {
         method: 'POST',
         headers: {
             Accept: 'application/json',
@@ -798,18 +798,19 @@ class AttendanceScreen extends React.Component {
     setSectionOptionValue = async (data)=>{ 
         this.setState({ 
         setSectionSelectedValue: data
-        })
+        }) 
         AsyncStorage.getItem('userId', (err, result) => {  
             fetch(this.state.url+'/api/admin/getstudent/'+this.state.setSelectedValue+'/'+data)
             .then(response => response.json())
             .then((responseJson)=> {   
-                let emptyData=[];
-                this.setState({emptyData});
-                let selectedattendance=this.state.selectedattendance;
+                
+                this.setState({loading: false,selectedattendance:[]});
+                this.setState({loading: false,students:[]});
+                let selectedattendance=this.state.selectedattendance; 
                 responseJson.map((itemValue,index) => { 
                     selectedattendance.push({ id: itemValue.id,type: 1})
-                })
-                this.setState({selectedattendance});
+                }) 
+                this.setState({loading: false,selectedattendance:selectedattendance});
 
                 this.setState({
                 loading: false,
@@ -845,38 +846,34 @@ class AttendanceScreen extends React.Component {
         }
        
        
-        this.setState({ selectedattendance });
+        this.setState({ selectedattendance:selectedattendance });
         // console.log(this.state.selectedattendance)
-        console.log(selectedattendance)
+        console.log(this.state.selectedattendance)
        
       
        
     }
     
      
-    submitHomework = async ()=>{
-        const  {userId,homework,setSelectedValue,setSectionSelectedValue,date,setSubjectSelectedValue}=this.state  
-        console.log(setSubjectSelectedValue)
-        fetch(this.state.url+'/api/admin/homework/store', {
+    submitattendance = async ()=>{ 
+        const  {userId,selectedattendance,setSelectedValue,setSectionSelectedValue,date}=this.state   
+        fetch(this.state.url+'/api/admin/attendance/store', {
         method: 'POST',
         headers: {
             Accept: 'application/json',
             'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-            user_id: userId,
-            homework: homework,
+            user_id: userId, 
             class_id: setSelectedValue,
-            section_id: setSectionSelectedValue,
-            subject_id: setSubjectSelectedValue,
+            section_id: setSectionSelectedValue, 
             date: date,
+            attendenceType_id: selectedattendance,
         })
        
         }).then(response => response.json())
         .then((responseJson)=> {   
-            this.setState({
-            homework: ''
-            });
+             
             Alert.alert(
             responseJson.msg 
             );
@@ -951,7 +948,7 @@ class AttendanceScreen extends React.Component {
                     
                     <View style={styles.rows}> 
                     { 
-                        
+                         
                         this.state.students.map((itemValue,index) => { 
                             var radio_props = [
                                 {label: 'P', value: itemValue.id+'_'+1 },
@@ -964,13 +961,12 @@ class AttendanceScreen extends React.Component {
                             >
                              <Text style={{width:100}}>{itemValue.registration_no}</Text>   
                             { 
-                                radio_props.map((obj, i) => (
-                                     
+                                radio_props.map((obj, i) => ( 
                                 <RadioButton labelHorizontal={true} key={i+1} >
                                     <RadioButtonInput
                                     obj={obj}
-                                    index={i}
-                                    isSelected={this.state.selectedattendance[index].id+'_'+this.state.selectedattendance[index].type === itemValue.id+'_'+(i+1)} 
+                                    index={i} 
+                                    isSelected={this.state.selectedattendance.length>0?this.state.selectedattendance[index].id+'_'+this.state.selectedattendance[index].type === itemValue.id+'_'+(i+1):null} 
                                     onPress={(value) => this.setAttendance(value)}
                                     borderWidth={1}
                                     buttonInnerColor={'#e74c3c'}
@@ -1001,7 +997,7 @@ class AttendanceScreen extends React.Component {
                 </View>
             <View> 
             <TouchableOpacity style={{margin:10}} > 
-            <Button onPress={() => this.submitHomework()}  
+            <Button onPress={() => this.submitattendance()}  
                 title="Save" /> 
             </TouchableOpacity> 
             </View>  
