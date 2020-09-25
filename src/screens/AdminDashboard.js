@@ -795,12 +795,13 @@ class AttendanceScreen extends React.Component {
     });
    
     }
-    setSectionOptionValue = async (data)=>{ 
+    setSectionOptionValue = async (section_id)=>{ 
         this.setState({ 
-        setSectionSelectedValue: data
+        setSectionSelectedValue: section_id
         }) 
+        
         AsyncStorage.getItem('userId', (err, result) => {  
-            fetch(this.state.url+'/api/admin/getstudent/'+this.state.setSelectedValue+'/'+data)
+            fetch(this.state.url+'/api/admin/getstudent/'+this.state.setSelectedValue+'/'+section_id)
             .then(response => response.json())
             .then((responseJson)=> {   
                 
@@ -816,9 +817,24 @@ class AttendanceScreen extends React.Component {
                 loading: false,
                 students: responseJson
                 })  
+                AsyncStorage.getItem('userId', (err, result) => {  
+                    fetch(this.state.url+'/api/admin/get-attendance/'+this.state.setSelectedValue+'/'+section_id+'/'+this.state.date)
+                    .then(response => response.json())
+                    .then((responseJson)=> {   
+                        if(responseJson.length !=0){
+                            this.setState({loading: false,selectedattendance:[]}); 
+                            let selectedattendance=this.state.selectedattendance; 
+                            responseJson.map((itemValue,index) => { 
+                                selectedattendance.push({ id: itemValue.student_id,type: itemValue.attendance_type_id})
+                            }) 
+                            this.setState({loading: false,selectedattendance:selectedattendance});  
+                        }                         
+                    }).catch(error=>console.log(error)) //to catch the errors if any
+                });
           }) 
           .catch(error=>console.log(error)) //to catch the errors if any
-          }); 
+        }); 
+        
     }
     setAttendance = async (value)=>{ 
         var strArray = value.split("_");
