@@ -7,6 +7,7 @@ import { Toolbar} from 'react-native-material-ui';
 import RadioForm, {RadioButton, RadioButtonInput, RadioButtonLabel} from 'react-native-simple-radio-button';
 import { black } from 'ansi-colors';
 import DatePicker from 'react-native-datepicker';
+import {Collapse,CollapseHeader, CollapseBody, AccordionList} from 'accordion-collapse-react-native';
 export const ROOT_URL = 'http://eageskool.com';
 class StudentProfile extends React.Component { 
   static navigationOptions = {
@@ -637,16 +638,11 @@ class AttendanceScreen extends React.Component {
     this.state = {
       loading: true,
       userId:'',
-      url:'',
-      dataSource:[], 
-      homWorks:[],      
-      homework:'',
+      url:'', 
       options:[],
       setSelectedValue:'',
       sectionOptions:[],
-      setSectionSelectedValue:'',
-      subjectOptions:[],
-      setSubjectSelectedValue:'',
+      setSectionSelectedValue:'', 
       date:'',
       attendanceType:[
         {label: 'P', value: 1 },
@@ -859,15 +855,48 @@ class AttendanceScreen extends React.Component {
         }else{ 
             selectedattendance.push({ id: student_id,type: attendance})
             
-        }
-       
-       
-        this.setState({ selectedattendance:selectedattendance });
-        // console.log(this.state.selectedattendance)
-        console.log(this.state.selectedattendance)
-       
-      
-       
+        } 
+        this.setState({ selectedattendance:selectedattendance }); 
+    }
+
+    setDate = async (date)=>{ 
+        this.setState({ 
+        date: date
+        })  
+        AsyncStorage.getItem('userId', (err, result) => {  
+            fetch(this.state.url+'/api/admin/getstudent/'+this.state.setSelectedValue+'/'+this.state.setSectionSelectedValue)
+            .then(response => response.json())
+            .then((responseJson)=> {   
+                
+                this.setState({loading: false,selectedattendance:[]});
+                this.setState({loading: false,students:[]});
+                let selectedattendance=this.state.selectedattendance; 
+                responseJson.map((itemValue,index) => { 
+                    selectedattendance.push({ id: itemValue.id,type: 1})
+                }) 
+                this.setState({loading: false,selectedattendance:selectedattendance});
+
+                this.setState({
+                loading: false,
+                students: responseJson
+                })  
+                AsyncStorage.getItem('userId', (err, result) => {  
+                    fetch(this.state.url+'/api/admin/get-attendance/'+this.state.setSelectedValue+'/'+this.state.setSectionSelectedValue+'/'+date)
+                    .then(response => response.json())
+                    .then((responseJson)=> {   
+                        if(responseJson.length !=0){
+                            this.setState({loading: false,selectedattendance:[]}); 
+                            let selectedattendance=this.state.selectedattendance; 
+                            responseJson.map((itemValue,index) => { 
+                                selectedattendance.push({ id: itemValue.student_id,type: itemValue.attendance_type_id})
+                            }) 
+                            this.setState({loading: false,selectedattendance:selectedattendance});  
+                        }                         
+                    }).catch(error=>console.log(error)) //to catch the errors if any
+                });
+            }) 
+            .catch(error=>console.log(error)) //to catch the errors if any
+        }); 
     }
     
      
@@ -957,7 +986,7 @@ class AttendanceScreen extends React.Component {
                             marginLeft: 36
                         }
                         }}
-                        onDateChange={(date) => {this.setState({date: date})}}
+                        onDateChange={(date) => this.setDate(date)}
                     />
                 </View> 
                 <View  style={{ margin: 10}}>
@@ -1094,55 +1123,434 @@ class FeeScreen extends React.Component {
   }
 }
 class ClassTestScreen extends React.Component {
-  constructor(props) {    
-    super(props);    
-    this.state = {
-      loading: true,
-      userId:'',
-      dataSource:[],      
-     };     
-   }
-    componentDidMount(){
-    AsyncStorage.getItem('userId').then((value) => 
-      this.setState({ 'userId': value })       
-      )
-      AsyncStorage.getItem('userId', (err, result) => {
-      fetch(ROOT_URL+'/api/student/homework-latest/'+this.state.userId)
-      .then(response => response.json())
-      .then((responseJson)=> {
-        this.setState({
-          loading: false,
-          dataSource: responseJson
-        })
+    constructor(props) {    
+      super(props);    
+      this.state = {
+        loading: true,
+        dataSource: [],
+        userId:'',
+        url:'', 
+        description:'',
+        options:[],
+        setSelectedValue:'',
+        sectionOptions:[],
+        setSectionSelectedValue:'',
+        subjectOptions:[],
+        setSubjectSelectedValue:'',
+        academicYearOptions:[],
+        setAcademicYearOptionsSelectedValue:'',
+        isIncludeTermExam:[  { name: 'None', id: '0' },
+        { name: 'Is Include Term Exam', id: '1' }],
+        setIsIncludeTermExamSelectedValue:'',
+        maxMarks:'',
+        date:'',
+       };     
+     }
+     
+      componentDidMount(){ 
+        var date = new Date().getDate();
+        var month = new Date().getMonth() + 1;
+        var year = new Date().getFullYear();
+         var date =date + '-' + month + '-' + year; 
+         this.setState({ 'date': date }) 
+  
+          AsyncStorage.getItem('userId').then((value) => 
+              this.setState({ 'userId': value })       
+          )
+          AsyncStorage.getItem('rootUrl').then((value) => 
+          this.setState({ 'url': value })       
+          ) 
+          AsyncStorage.getItem('userId', (err, result) => {
+          fetch(ROOT_URL+'/api/student/homework/'+this.state.userId)
+          .then(response => response.json())
+          .then((responseJson)=> {
+            this.setState({
+              loading: false,
+              homWorks: responseJson
+            })
+          }) 
+          .catch(error=>console.log(error)) //to catch the errors if any
+          });
+          AsyncStorage.getItem('userId', (err, result) => {
+          fetch(this.state.url+'/api/admin/getclass/'+this.state.userId)
+          .then(response => response.json())
+          .then((responseJson)=> {  
+            this.setState({
+              loading: false,
+              options: responseJson
+            }) 
+          }) 
+          .catch(error=>console.log(error)) //to catch the errors if any
+          });
+          
+          AsyncStorage.getItem('userId', (err, result) => {
+          fetch(this.state.url+'/api/admin/academic-year')
+          .then(response => response.json())
+          .then((responseJson)=> {  
+            this.setState({
+              loading: false,
+              academicYearOptions: responseJson
+            })  
+          }) 
+          .catch(error=>console.log(error)) //to catch the errors if any
+          });
+      } 
+      setOptionValue = async (class_id)=>{ 
+      this.setState({ 
+        setSelectedValue: class_id
       })
+      AsyncStorage.getItem('userId', (err, result) => {
+        fetch(this.state.url+'/api/admin/getsection/'+this.state.userId+'/'+class_id)
+        .then(response => response.json())
+        .then((responseJson)=> {  
+          this.setState({
+            loading: false,
+            sectionOptions: responseJson
+        }) 
+      }) 
       .catch(error=>console.log(error)) //to catch the errors if any
       });
-    }  
-  static navigationOptions = {
-    drawerLabel: 'Class Test',
-    drawerIcon: ({ tintColor }) => ( 
-      <Icon name="file" size={20} color="#000" />
-    ),
-  };
-
+      AsyncStorage.getItem('userId', (err, result) => {
+        fetch(this.state.url+'/api/admin/getsubject/'+this.state.userId+'/'+class_id)
+        .then(response => response.json())
+        .then((responseJson)=> {  
+          this.setState({
+            loading: false,
+            subjectOptions: responseJson
+        }) 
+      }) 
+      .catch(error=>console.log(error)) //to catch the errors if any
+      });
+      }
+      setSectionOptionValue = async (data)=>{
+          this.setState({ 
+          setSectionSelectedValue: data
+          })
+      }
+      setSubjectOptionValue = async (data)=>{
+          this.setState({ 
+          setSubjectSelectedValue: data
+          })
+      }
+      setAcademicYearOptions = async (data)=>{
+          this.setState({ 
+            setAcademicYearOptionsSelectedValue: data
+          })
+      }
+      
+      setIsIncludeTermExam = async (data)=>{ 
+          this.setState({ 
+            setIsIncludeTermExamSelectedValue: data
+          })
+      }
+      submitClassTest = async ()=>{
+          const  {userId,description,setSelectedValue,setSectionSelectedValue,date,setSubjectSelectedValue,setAcademicYearOptionsSelectedValue,setIsIncludeTermExamSelectedValue,maxMarks}=this.state  
+         
+          fetch(this.state.url+'/api/admin/classtest/store', {
+          method: 'POST',
+          headers: {
+              Accept: 'application/json',
+              'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+              user_id: userId,
+              description: description,
+              class_id: setSelectedValue,
+              section_id: setSectionSelectedValue,
+              subject: setSubjectSelectedValue,
+              is_include_term_exam: setIsIncludeTermExamSelectedValue,
+              academic_year_id: setAcademicYearOptionsSelectedValue,
+              test_date: date,
+              max_marks: maxMarks,
+          })
+         
+          }).then(response => response.json())
+          .then((responseJson)=> {   
+              this.setState({
+              description: ''
+              }); 
+              Alert.alert(
+              responseJson.msg 
+              );
+          })  
+      }
+      showClassTest = async ()=>{
+        const  {userId,setSelectedValue,setSectionSelectedValue,date,setSubjectSelectedValue,setAcademicYearOptionsSelectedValue}=this.state  
+       
+        fetch(this.state.url+'/api/admin/classtest/show', {
+        method: 'POST',
+        headers: {
+            Accept: 'application/json',
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            user_id: userId,
+            class_id: setSelectedValue,
+            section_id: setSectionSelectedValue,
+            subject: setSubjectSelectedValue,
+            academic_year_id: setAcademicYearOptionsSelectedValue,
+            test_date: date,
+        })
+       
+        }).then(response => response.json())
+        .then((responseJson)=> {  
+          if(responseJson.status==1) 
+          console.log(responseJson.data)
+            this.setState({
+              dataSource: responseJson.data
+            });  
+        })  
+    }     
+    goToOtherTab = async ()=>{
+        console.log('d')
+        this.props.navigation.navigate('Fee');
+    }     
+   
+    FlatListItemSeparator = () => {
+      return (
+        <View style={{
+            height: .5,
+            width:"100%", 
+      }}
+      />
+      );
+    } 
+    renderItem=(data)=>
+  <TouchableOpacity style={styles.list}>
+  <Text style={styles.lightText}>{data.item.created_at} 
+   {data.item.homework}</Text></TouchableOpacity>
   
+    static navigationOptions = {
+        drawerLabel: 'Class Test',
+        drawerIcon: ({ tintColor }) => ( 
+        <Icon name="file" size={20} color="#000" />
+        ),
+    }; 
+      render() {
+          if(this.state.loading){
+          return( 
+              <View style={styles.loader}> 
+              <ActivityIndicator size="large" color="#0c9"/>
+              </View>
+          )}
+          return (
+          <ScrollView> 
+          <View > 
+              
+              <View style={styles.rows}> 
+              <Picker 
+                  style={{ height: 50, width: 160,margin:10, borderColor: 'red',
+                  backgroundColor: '#f5f2f2',
+                  borderWidth: 1,}} 
+                  selectedValue={this.state.setSelectedValue}
+                  onValueChange={(itemValue) => this.setOptionValue(itemValue)}
+                  >
+                  { 
+                      this.state.options.map((itemValue,index) => { 
+                      return <Picker.Item key={itemValue.id} value={itemValue.id} label={itemValue.name} />;
+                      })
+                  } 
+                  </Picker>
+                  <Picker 
+                  style={{ height: 50, width: 160,margin:10, borderColor: 'red',
+                  backgroundColor: '#f5f2f2',
+                  borderWidth: 1,}} 
+                  selectedValue={this.state.setSectionSelectedValue}
+                  onValueChange={(itemValue) => this.setSectionOptionValue(itemValue)}
+                  >
+                  { 
+                      this.state.sectionOptions.map((itemValue,index) => { 
+                      return <Picker.Item key={itemValue.id} value={itemValue.id} label={itemValue.name} />;
+                      })
+                  } 
+                  </Picker>
+              
+              </View>
+              <View  style={styles.rows}>
+                  <View> 
+                      <Picker 
+                      style={{ height: 50, width: 160,margin:10, borderColor: 'red',
+                      backgroundColor: '#f5f2f2',
+                      borderWidth: 1,}} 
+                      selectedValue={this.state.setSubjectSelectedValue}
+                      onValueChange={(itemValue) => this.setSubjectOptionValue(itemValue)}
+                      >
+                      { 
+                          this.state.subjectOptions.map((itemValue,index) => { 
+                          return <Picker.Item key={itemValue.id} value={itemValue.id} label={itemValue.name} />;
+                          })
+                      } 
+                      </Picker>
+                  
+                  </View>
+                  <View>
+                  <DatePicker
+                      style={{width: 160,margin:10}}
+                      date={this.state.date}
+                      mode="date"
+                      placeholder="select date"
+                      format="DD-MM-YYYY" 
+                      confirmBtnText="Confirm"
+                      cancelBtnText="Cancel"
+                      customStyles={{
+                      dateIcon: {
+                          position: 'absolute',
+                          left: 0,
+                          top: 4,
+                          marginLeft: 0
+                      },
+                      dateInput: {
+                          marginLeft: 36
+                      }
+                      // ... You can check the source to find the other keys.
+                      }}
+                      onDateChange={(date) => {this.setState({date: date})}}
+                  />
+                  </View>
+                  
+              </View>
+              <View style={styles.rows}> 
+                <View>
+                <Picker 
+                    style={{ height: 50, width: 160,margin:10, borderColor: 'red',
+                    backgroundColor: '#f5f2f2',
+                    borderWidth: 1,}} 
+                    selectedValue={this.state.setAcademicYearOptionsSelectedValue}
+                    onValueChange={(itemValue) => this.setAcademicYearOptions(itemValue)}
+                    >
+                    { 
+                        this.state.academicYearOptions.map((itemValue,index) => { 
+                        return <Picker.Item key={itemValue.id} value={itemValue.id} label={itemValue.name} />;
+                        })
+                    } 
+                    </Picker> 
+                </View>
+                <View> 
+                <Picker 
+                    style={{ height: 50, width: 160,margin:10, borderColor: 'red',
+                    backgroundColor: '#f5f2f2',
+                    borderWidth: 1,}} 
+                    selectedValue={this.state.setIsIncludeTermExamSelectedValue}
+                    onValueChange={(itemValue) => this.setIsIncludeTermExam(itemValue)}
+                    >
+                    { 
+                        this.state.isIncludeTermExam.map((itemValue,index) => { 
+                        return <Picker.Item key={itemValue} value={itemValue.id} label={itemValue.name} />;
+                        })
+                    } 
+                    </Picker> 
+                </View>
+                </View>
+              <View>
+              <TextInput style=
+              {{
+              borderColor: 'gray', borderWidth: 1,margin:10,
+              }}      
+              underlineColorAndroid='rgba(0,0,0,0)' 
+              maxLength = {3}
+              keyboardType="number-pad"
+              placeholder="Max Marks" 
+              selectionColor="#fff" 
+              onChangeText={text=> this.setState({maxMarks:text})}
+              />
+              </View>
+              <View>
+              <TextInput  style=
+              {{
+              borderColor: 'gray', borderWidth: 1,margin:10,
+              }}       
+              editable = {true}
+              maxLength = {4000}
+              multiline = {true}
+              numberOfLines = {10}
+              placeholder="Enter Description"
+              onChangeText={text=> this.setState({description:text})}
+              /> 
+              </View>
+              <View style={styles.rows}> 
+              <View> 
+              <TouchableOpacity style={{margin:20,height: 50, width: 160}} > 
+              <Button onPress={() => this.submitClassTest()}  
+                  title="Save" /> 
+              </TouchableOpacity> 
+              </View> 
+              <View> 
+              <TouchableOpacity style={{margin:10,height: 50, width: 160}} > 
+              <Button onPress={() => this.showClassTest()}  
+                  title="Show" /> 
+              </TouchableOpacity> 
+              </View> 
+              </View> 
 
-  render() {
-    return (
-      
-      <View style={styles.list}>
-        <Text style={styles.name}> Date : <Moment element={Text} format="DD/MM/YYYY">{this.state.dataSource.created_at}</Moment> </Text>
-      <Text style={styles.name}>
-      
-      {this.state.dataSource.homework} 
-      
-        </Text>
-      </View>
-      
-     
-    );
+            
+              <View> 
+                 { 
+                    this.state.dataSource.map((itemValue,index) => {  
+                           return <Collapse>
+                                <CollapseHeader style={{borderBottomWidth:1,borderTopWidth:1,padding:10}}>
+                                <View>
+                                    <Text>{itemValue.id} - <Moment element={Text} format="DD/MM/YYYY">{itemValue.test_date}</Moment> - {itemValue.discription}</Text> 
+                                   
+                                </View>
+                                </CollapseHeader>
+                                <CollapseBody style={{borderBottomWidth:1,borderTopWidth:1,height:800}}>
+                                    
+                                    <TouchableOpacity style={{margin:10,height: 50, width: 160}} > 
+                                        <Button onPress={() => this.showClassTest()}  
+                                            title="Edit" /> 
+                                    </TouchableOpacity>
+                                    <TouchableOpacity style={{margin:10,height: 50, width: 160}} > 
+                                        <Button onPress={() => this.showClassTest()}  
+                                            title="Add Marks" /> 
+                                    </TouchableOpacity>
+                                    <TouchableOpacity style={{margin:10,height: 50, width: 160}} > 
+                                        <Button onPress={() => this.showClassTest()}  
+                                            title="Verify" /> 
+                                    </TouchableOpacity>
+                                    <TouchableOpacity style={{margin:10,height: 50, width: 160}} > 
+                                        <Button onPress={() => this.showClassTest()}  
+                                            title="Compile" /> 
+                                    </TouchableOpacity>
+                                    <TouchableOpacity style={{margin:10,height: 50, width: 160}} > 
+                                        <Button onPress={() => this.showClassTest()}  
+                                            title="SMS Send Test Info" /> 
+                                    </TouchableOpacity>
+                                    <TouchableOpacity style={{margin:10,height: 50, width: 160}} > 
+                                        <Button onPress={() => this.showClassTest()}  
+                                            title="SMS Send Marks Info" /> 
+                                    </TouchableOpacity>
+                                    <TouchableOpacity style={{margin:10,height: 50, width: 160}} > 
+                                        <Button onPress={() => this.showClassTest()}  
+                                            title="Cancel Test" /> 
+                                    </TouchableOpacity>
+                                    <TouchableOpacity style={{margin:10,height: 50, width: 160}} > 
+                                        <Button onPress={() => this.showClassTest()}  
+                                            title="Re Cancel Test" /> 
+                                    </TouchableOpacity>
+                                    <TouchableOpacity style={{margin:10,height: 50, width: 160}} > 
+                                        <Button onPress={() => this.showClassTest()}  
+                                            title="Delete" /> 
+                                    </TouchableOpacity>
+                                    <TouchableOpacity style={{margin:10,height: 50, width: 160}} > 
+                                        <Button onPress={() => this.showClassTest()}  
+                                            title="Print" /> 
+                                    </TouchableOpacity>
+                                </CollapseBody>
+                            </Collapse> 
+                    })
+                }   
+                 
+              </View> 
+              <View> 
+               
+              </View> 
+            
+          </View>
+          </ScrollView>
+          );
+      }
   }
-}
+
 class EventScreen extends React.Component {
   constructor(props) {    
     super(props);    
